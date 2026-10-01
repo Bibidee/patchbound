@@ -307,6 +307,8 @@ class Patchbound(gl.Contract):
     def claim_funds(self, agreement_id: str) -> str:
         a = self._get(agreement_id)
         sender = gl.message.sender_address
+        if a.settlement_state in ("PAYOUT_DISPATCHED", "REFUND_DISPATCHED"):
+            raise gl.vm.UserError("This agreement already dispatched its one-shot transfer")
         amount = self.entitlements.get(agreement_id, u256(0))
         if amount == u256(0):
             raise gl.vm.UserError("No funds from this agreement are claimable by this wallet")
