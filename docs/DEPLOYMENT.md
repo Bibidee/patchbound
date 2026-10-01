@@ -67,6 +67,12 @@ Use a real `NOT_SATISFIED` or `INCONCLUSIVE` attempt where practical.
 
 Desktop and narrow/mobile widths:
 
+Observed boundary on 2026-10-01: the production `Connect wallet` control reported
+`No injected EVM wallet found. Install MetaMask or Rabby.` The public repository
+currently has zero open and zero closed pull requests. Therefore the wallet,
+transaction, finality, refresh-recovery, and lifecycle evidence below remain
+unchecked until a real injected wallet and public agreement-bound PR are used.
+
 - [ ] application loads without critical errors
 - [ ] connect works with injected EIP-1193 wallet
 - [ ] disconnect works
