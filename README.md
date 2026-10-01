@@ -25,7 +25,7 @@ There is no application backend, server database, operator signer, cron worker, 
 - Explorer: `https://explorer-studio.genlayer.com`
 - Repository-local GenLayer CLI: `0.39.1`
 - GenLayerJS: `1.1.8`
-- Next.js: `16.3.2`
+- Next.js: `16.3.8`
 - React: `19.2.4`
 
 Run CLI commands through the local package, e.g. `npm run cli -- --version` or `npx genlayer --version`. Do not rely on a globally installed CLI.
@@ -39,7 +39,7 @@ Run CLI commands through the local package, e.g. `npm run cli -- --version` or `
 5. Validators construct GitHub API URLs themselves. They verify repository identity, marker, exact head SHA, bounded changed-file evidence and public combined commit status when CI is required.
 6. Validators independently judge the clauses. Free-form explanations are not consensus-critical; outcome, SHA and CI state are independently reproduced.
 7. `NOT_SATISFIED` and `INCONCLUSIVE` remain recoverable while the agreement is active. The same PR/head SHA cannot be replayed.
-8. `SATISFIED` changes the agreement to `PAYABLE`. The developer claims the reward. External value transfer is emitted on finalization.
+8. `SATISFIED` changes the agreement to `PAYABLE`. The developer claims the reward. The parent claim reserves an agreement-specific entitlement, the external transfer child is checked separately, and the recipient confirms completion before the agreement becomes `PAID`.
 9. Unaccepted or undelivered agreements can expire to requester refund entitlement.
 
 ## Evidence boundaries
@@ -53,7 +53,7 @@ Only the on-chain clauses are authoritative requirements. GitHub repository cont
 - `/work/[id]` — immutable terms, delivery, evidence attempts, protocol lifecycle and settlement
 - `/activity` — terminal agreement history reconstructed from contract state
 
-The UI treats `ACCEPTED` as provisional and waits separately for `FINALIZED`.
+The UI treats `ACCEPTED` as provisional and waits separately for `FINALIZED`. A submitted hash is persisted in browser local storage as recovery metadata only; canonical state remains on GenLayer. Finalized status is not treated as execution success unless the receipt reports `FINISHED_WITH_RETURN`.
 
 ## Local setup
 
@@ -63,7 +63,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-The deployed contract is configured by default; deployments may override it with:
+The contract address must be supplied for each deployment; the frontend fails closed when it is missing:
 
 ```bash
 NEXT_PUBLIC_PATCHBOUND_CONTRACT=0x...
@@ -90,25 +90,17 @@ The suite covers funded creation, role authorization, post-acceptance cancellati
 
 ## Deployment
 
-Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The contract is finalized on Studionet and the frontend is live at `https://patchbound.vercel.app`.
+Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The previously recorded Studionet contract and Vercel deployment refer to the earlier source revision. This remediation changes the contract ABI and settlement behavior, so the new source must be deployed and verified before the production frontend is repointed.
 
-## Contract deployment
-
-- Address: `0x4CBb65036b3E688dAEE420127c2aeD14CDE41Db5`
-- Deployment transaction: `0xd7f1b214b186612c9a3798f7324b6d8ceaab0eaa704d6b93c2d82fe5c3cbad3d`
-- Deployment status: `FINALIZED`
-- Explorer: [Studionet transaction](https://explorer-studio.genlayer.com/tx/0xd7f1b214b186612c9a3798f7324b6d8ceaab0eaa704d6b93c2d82fe5c3cbad3d)
-- Deployed source SHA-256: `004637DFA73D303E821516557DC2DD81B8324E13655A36CEDC6306BD981FCD9A`
-- Frontend: `https://patchbound.vercel.app`
-
-These placeholders must be replaced with real evidence; they are not claims of deployment.
+Historical deployment records are retained for provenance only. The remediation deployment address, transaction, source hash, and Vercel deployment are intentionally blank until they are observed from the real signer and network.
 
 ## Known V1 limitations
 
 - Public GitHub repositories only.
 - One requester and one predetermined developer per agreement.
 - Small bounded diffs only; no repository-wide code execution by validators.
-- Public CI is supporting evidence, not proof that validators reproduced the build.
+- GitHub combined commit status is supporting evidence, not proof that validators reproduced the build.
 - GitHub availability and unauthenticated API rate limits can cause `INCONCLUSIVE` outcomes.
 - The PR marker is agreement-scoped submission control, not a permanent cryptographic GitHub identity.
+- External transfer children are asynchronous. A recipient must confirm a verified child success; otherwise the agreement remains payout/refund pending and can be retried by the recipient.
 - No private repositories, generic freelance marketplace, reputation system, governance or token layer.

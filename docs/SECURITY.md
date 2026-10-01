@@ -16,9 +16,12 @@ Repository code, patches, filenames, commit messages, issue text and pull-reques
 - only `SATISFIED` creates developer entitlement;
 - `NOT_SATISFIED` and `INCONCLUSIVE` do not move funds;
 - exact `(agreement, PR, head SHA)` replay is rejected;
+- evidence binds repository, PR number, head SHA, base SHA, bounded changed-file content, CI state and a canonical digest;
+- the PR head and base are rechecked after file collection so a moving PR becomes `INCONCLUSIVE`;
 - terminal states cannot re-enter the active lifecycle;
-- withdrawal checks agreement-specific entitlement before emitting value.
+- withdrawal checks agreement-specific entitlement before emitting value;
+- claim accounting remains reserved until the recipient confirms the asynchronous transfer child.
 
 ## External evidence
 
-GitHub is an external authority and can be unavailable, rate-limited or inconsistent. The safe response is `INCONCLUSIVE` when reliable evidence cannot be obtained. Consensus decentralizes interpretation of the evidence; it does not decentralize GitHub itself.
+GitHub is an external authority and can be unavailable, rate-limited or inconsistent. The safe response is `INCONCLUSIVE` when reliable evidence cannot be obtained. Consensus compares outcome, head/base SHA, CI state and evidence digest; the free-form explanation is informational and not consensus-critical. Consensus decentralizes interpretation of the evidence; it does not decentralize GitHub itself.

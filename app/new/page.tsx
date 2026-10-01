@@ -1,12 +1,13 @@
 "use client";
 
-import {FormEvent,useMemo,useState} from "react";
+import {FormEvent,useCallback,useEffect,useMemo,useState} from "react";
 import {useRouter} from "next/navigation";
 import {parseEther} from "viem";
 import {useWallet,onStudionet} from "@/components/WalletProvider";
-import {write} from "@/lib/genlayer";
+import {ExecutionFailedError,SubmittedTransactionError,resumeTransaction,write} from "@/lib/genlayer";
 import {TxPanel} from "@/components/TxPanel";
 import type {TxStage} from "@/lib/types";
+import {findPendingTransaction,removePendingTransaction,savePendingTransaction} from "@/lib/tx-tracking";
 
 export default function NewAgreement() {
   const wallet = useWallet();
@@ -22,6 +23,24 @@ export default function NewAgreement() {
   const [stage,setStage] = useState<TxStage>("idle");
   const [hash,setHash] = useState("");
   const [error,setError] = useState("");
+  const applyProgress = useCallback((progress: Parameters<NonNullable<Parameters<typeof write>[5]>>[0]) => {
+    setHash(progress.hash);
+    setStage(progress.status === "FAILED" ? "failed" : progress.status === "TRACKING" ? "tracking" : progress.status === "UNKNOWN" ? "unknown" : progress.status.toLowerCase() as TxStage);
+    if (progress.status === "SUBMITTED") savePendingTransaction({hash: progress.hash, action: "open_agreement", wallet: wallet.address, network: wallet.chainId || 0, submittedAt: Date.now(), route: "/new"});
+    if (progress.status === "FINALIZED" || progress.status === "FAILED") removePendingTransaction(progress.hash);
+    if (progress.error) setError(progress.error);
+  }, [wallet.address,wallet.chainId]);
+  useEffect(() => {
+    if (!wallet.address) return;
+    const pending = findPendingTransaction({action: "open_agreement", wallet: wallet.address});
+    if (!pending) return;
+    setHash(pending.hash);setStage("tracking");setError("A funded agreement transaction was already submitted. Resume tracking before submitting another one.");
+    void resumeTransaction(pending.hash, applyProgress).then(result => {
+      if (result.status === "FINALIZED") removePendingTransaction(pending.hash);
+    }).catch(caught => {
+      if (caught instanceof ExecutionFailedError) { removePendingTransaction(pending.hash); setStage("failed"); setError(caught.message); }
+    });
+  }, [wallet.address,applyProgress]);
   const cleanClauses = useMemo(() => clauses.map(value => value.trim()).filter(Boolean), [clauses]);
   const setClause = (index: number,value: string) => setClauses(current => current.map((item,itemIndex) => itemIndex === index ? value : item));
   const submit = async (event: FormEvent) => {
@@ -33,9 +52,9 @@ export default function NewAgreement() {
       if (!/^[-\w.]+\/[-\w.]+$/.test(repo)) throw new Error("Repository must be owner/name for a public GitHub repository.");
       const now = Math.floor(Date.now() / 1000);
       setStage("wallet");
-      const out = await write(wallet.address as `0x${string}`,wallet.provider as never,"open_agreement",[developer,repo,Number(issue || 0),cleanClauses,ci,now + Number(offerDays) * 86400,now + Number(deliveryDays) * 86400],parseEther(reward),progress => {setHash(progress.hash);setStage(progress.status.includes("ACCEPT") ? "accepted" : "submitted")});
-      setHash(out.hash);setStage("finalized");window.setTimeout(() => router.push("/"),1200);
-    } catch (caught) {setStage("failed");setError(caught instanceof Error ? caught.message : String(caught));}
+      const out = await write(wallet.address as `0x${string}`,wallet.provider as never,"open_agreement",[developer,repo,Number(issue || 0),cleanClauses,ci,now + Number(offerDays) * 86400,now + Number(deliveryDays) * 86400],parseEther(reward),applyProgress);
+      removePendingTransaction(out.hash);setHash(out.hash);setStage("finalized");window.setTimeout(() => router.push("/"),1200);
+    } catch (caught) {if (caught instanceof SubmittedTransactionError) {setHash(caught.hash);setStage("tracking");setError(caught.message);} else {setStage("failed");setError(caught instanceof Error ? caught.message : String(caught));}}
   };
   return <div className="page">
     <div className="page-intro"><span className="eyebrow">NEW AGREEMENT / BUILDER</span><h1>Lock the terms before the work begins.</h1><p>The agreement becomes immutable after creation. The designated developer accepts the terms, submits public evidence, and validators decide against the rules you define here.</p></div>
@@ -57,8 +76,8 @@ export default function NewAgreement() {
 
         <section className="builder-stage"><div className="stage-heading"><span className="stage-number">04</span><div><h2>Review before signing</h2><p>Read the complete agreement summary before your wallet is asked to sign.</p></div></div><div className="review-list"><div className="review-row"><span>REPOSITORY</span><strong>{repo || "owner/repository"}</strong></div><div className="review-row"><span>DEVELOPER</span><code>{developer || "0x7A4C…"}</code></div><div className="review-row"><span>REWARD</span><strong>{reward || "—"} GEN</strong></div><div className="review-row"><span>ACCEPTANCE RULES</span><strong>{cleanClauses.length} / 5</strong></div><div className="review-row"><span>PUBLIC CI</span><strong>{ci ? "Required" : "Not required"}</strong></div><div className="review-row"><span>WINDOWS</span><strong>{offerDays || "—"} days offer · {deliveryDays || "—"} days delivery</strong></div></div></section>
 
-        <div className="builder-submit"><p><b>Your wallet signs directly.</b><br />Patchbound cannot rewrite the agreement after creation. Writes are blocked unless the wallet is on Studionet.</p><button className="primary" disabled={stage !== "idle" && stage !== "failed"}>Fund & create agreement <span aria-hidden="true">→</span></button></div>
-        <TxPanel stage={stage} hash={hash} error={error} />
+        <div className="builder-submit"><p><b>Your wallet signs directly.</b><br />Patchbound cannot rewrite the agreement after creation. Writes are blocked unless the wallet is on Studionet.</p><button className="primary" disabled={!['idle','failed'].includes(stage)}>Fund & create agreement <span aria-hidden="true">→</span></button></div>
+        <TxPanel stage={stage} hash={hash} error={error} onResume={hash ? () => {setStage("tracking");void resumeTransaction(hash,applyProgress)} : undefined} />
       </form>
       <aside className="preview-sticky"><span className="eyebrow">AGREEMENT PREVIEW</span><h2>YOU ARE ABOUT TO LOCK</h2><div className="preview-summary"><div><span>REPOSITORY</span><strong>{repo || "acme-labs/parser-core"}</strong></div><div><span>DEVELOPER</span><code>{developer || "0x7A4C…901B"}</code></div><div><span>REWARD</span><strong>{reward || "5.00"} GEN</strong></div><div><span>ACCEPTANCE RULES</span><strong>{cleanClauses.length} rule{cleanClauses.length === 1 ? "" : "s"}</strong></div><div><span>PUBLIC CI</span><strong>{ci ? "Required" : "Not required"}</strong></div><div><span>OFFER / DELIVERY</span><strong>{offerDays || "—"} days / {deliveryDays || "—"} days</strong></div></div><p className="review-note">The wallet signature creates the canonical agreement. No server or administrator can modify these terms later.</p></aside>
     </div>

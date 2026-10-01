@@ -9,16 +9,17 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "direct:test": "node scripts/direct-test.mjs",
     "cli": "genlayer",
     "network:check": "node scripts/network-check.mjs",
-    "preflight": "npm run network:check && npm run typecheck && npm run lint && npm run test && npm run build"
+    "preflight": "npm run network:check && npm run typecheck && npm run lint && npm run test && npm run direct:test && npm run build"
   },
   "dependencies": {
     "genlayer-js": "1.1.8",
-    "next": "16.3.2",
+    "next": "16.3.8",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "viem": "2.37.9"
+    "viem": "2.57.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.3.1",
@@ -28,10 +29,10 @@
     "@types/react": "19.1.16",
     "@types/react-dom": "19.1.9",
     "eslint": "9.36.0",
-    "eslint-config-next": "16.3.2",
+    "eslint-config-next": "16.3.8",
     "genlayer": "0.39.1",
     "jsdom": "27.0.0",
     "typescript": "5.9.2",
-    "vitest": "3.2.4"
+    "vitest": "3.2.7"
   }
 }
