@@ -5,7 +5,7 @@ This file records observed evidence only. Every lifecycle hash, PR, commit, and 
 ## Remediation status
 
 - Status: `NOT READY FOR FINAL AUDIT`.
-- Blocking item: real production write/finality browser evidence remains pending action-time confirmation; the Brave Computer Use session now has an injected EIP-1193 wallet on Studionet.
+- Remaining browser evidence: wrong-network detection/switching, a real second-account developer path, and a production mobile viewport. Browser create, cancellation, refund, finality, child transfer, and refresh recovery are now evidenced below.
 - Hardened contract: deployed and finalized on Studionet.
 - Production frontend: redeployed and aliased to `https://patchbound.vercel.app`.
 - Genuine success and expiry/refund lifecycles: verified against the hardened contract.
@@ -30,7 +30,7 @@ There is no public retry and no public confirmation method. GenLayer external tr
 - [x] `npm run preflight` — network check, release verification, typecheck, lint, 12 UI tests, 37 Direct Mode tests, and production build all passed.
 - [x] `npm audit --omit=dev --audit-level=high` — no production high/critical advisories after the dependency update.
 - [ ] Full dependency audit is not entirely zero: 5 moderate dev-only transitive findings remain in the GenLayer CLI/Vitest/Dockerode toolchain; forcing Vitest 4 would be a breaking change.
-- [x] Public CI for the hardened source passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36877417761) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36877418062).
+- [x] Public CI for the hardened source passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36897533311) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36897537104).
 - [x] repository search finds no forbidden network configuration.
 - [x] no secrets or private keys are tracked.
 
@@ -77,9 +77,9 @@ The following records belong to the prior deployed source revision and are retai
 
 - Production URL: [`https://patchbound.vercel.app`](https://patchbound.vercel.app).
 - Production contract environment: `0xF9C533e541d04bfcaac45A4cEc008154E9ed7471`.
-- Vercel deployment: `dpl_5MZ7CKV4RfubPCqbnbHFUJeMFCLy` (`READY`).
-- Deployment URL: [`https://patchbound-1ye3zda4v-bibidees-projects.vercel.app`](https://patchbound-1ye3zda4v-bibidees-projects.vercel.app).
-- Inspector: [`https://vercel.com/bibidees-projects/patchbound/5MZ7CKV4RfubPCqbnbHFUJeMFCLy`](https://vercel.com/bibidees-projects/patchbound/5MZ7CKV4RfubPCqbnbHFUJeMFCLy).
+- Vercel deployment: `dpl_3LAw1ijTKqBqmcDynqr1Ym2JSKZq` (`READY`).
+- Deployment URL: [`https://patchbound-instvw2j2-bibidees-projects.vercel.app`](https://patchbound-instvw2j2-bibidees-projects.vercel.app).
+- Inspector: [`https://vercel.com/bibidees-projects/patchbound/3LAw1ijTKqBqmcDynqr1Ym2JSKZq`](https://vercel.com/bibidees-projects/patchbound/3LAw1ijTKqBqmcDynqr1Ym2JSKZq).
 
 ## Real lifecycle A — recovery, satisfied evaluation, and payout dispatch
 
@@ -137,7 +137,7 @@ This is the genuine public-CI lifecycle proof. The exact combined status is publ
 
 ## Browser verification
 
-Observed through Computer Use in Brave on 2026-10-01: production `/` and `/work/1` loaded; the Studionet/61999 badge and navigation rendered; the Brave-injected account `0x4a7d76b8c4668a3426d6d54ec24b41fa87b532f5` connected and displayed; app-level disconnect/reconnect worked; `/work/1` displayed canonical agreement `1` with `SATISFIED`, `PAYOUT_DISPATCHED`, PR #3, and its bound head SHA after refresh. Funded browser writes were not started without action-time confirmation. See [`docs/BROWSER_E2E.md`](BROWSER_E2E.md) for the observed-only matrix.
+Observed through Computer Use in Brave on 2026-10-01: production `/` and `/work/1` loaded; the Studionet/61999 badge and navigation rendered; the Brave-injected account `0x4a7d76b8c4668a3426d6d54ec24b41fa87b532f5` connected and displayed; app-level disconnect/reconnect worked; `/work/1` displayed canonical agreement `1` with `SATISFIED`, `PAYOUT_DISPATCHED`, PR #3, and its bound head SHA after refresh. The same session created Agreement 4 using developer address `0xFf203Bb65942F50CB81A8AF98c5F5bd9d8a79b54`, cancelled it, and dispatched one real browser refund. Its create transaction was `0x723b64c59ce7463042b19d8d3f0f3d2a026a4a13c887945c0282f41ea1ce68b5`, cancellation was `0xb08a7c6eb3391622a326972e5ac1fe8362c79362553f8d2b289744ca88aeb8d9`, and refund was `0x097fe749097aeaa33e47f8764cf8823f848fc5fcb10870e4c2710427951bad73`. The refund child `0x6d1d6aa9fcfebcfe8367459e8285d060afd7f529cb6c6d7a06c2a0edee02d5b8` finalized with `value_credited=true`; a production refresh showed `CANCELLED` / `REFUND_DISPATCHED`, `0.001 GEN` dispatched, and no requester claimable balance. See [`docs/BROWSER_E2E.md`](BROWSER_E2E.md) for the observed-only matrix.
 
 - [x] application loads without critical errors on production `/` and `/work/1`
 - [x] missing injected wallet is handled with a clear disconnected state
@@ -146,10 +146,10 @@ Observed through Computer Use in Brave on 2026-10-01: production `/` and `/work/
 - [ ] account changes update UI from a real Brave `accountsChanged` event
 - [ ] wrong network is detected
 - [ ] switching targets 61999
-- [ ] write reaches wallet
-- [ ] submitted state is shown
+- [x] create, cancellation, and refund writes reach the Brave wallet
+- [x] submitted/finalized flow was observed for the refund path
 - [ ] accepted state is labelled provisional
-- [ ] finalized state is distinct
+- [x] finalized refund state and child-transfer dispatch are distinct in the redeployed UI
 - [x] contract state survives refresh
 - [ ] failed/inconclusive attempt is understandable
 - [x] explorer links point to real 61999 objects
@@ -167,5 +167,5 @@ The following records belong to earlier source revisions and are retained only f
 ## Remaining limitations
 
 - GenLayer external child transfers are asynchronous. The contract cannot inspect a later child receipt, and a failed child transfer does not automatically return value to the sender. The safe policy is one emission with honest dispatch accounting; no public retry or confirmation path is exposed.
-- Browser wallet write-path checks require an injected EIP-1193 wallet on the Computer Use test host. Brave now provides one, but funded writes still require action-time confirmation; the separate signed direct Studionet lifecycle verification is complete.
+- Browser wallet write-path coverage now includes genuine requester-side create, cancellation, refund, finality, transfer-child, and refresh evidence. It still lacks a real second-account developer acceptance/evaluation/payout browser pass, wrong-network transition, and production mobile viewport.
 - Dev-only moderate dependency findings remain documented; production high/critical audit findings are clear.

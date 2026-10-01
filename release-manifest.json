@@ -14,10 +14,12 @@
   "contract_address": "0xF9C533e541d04bfcaac45A4cEc008154E9ed7471",
   "deployment_tx": "0xce5cf9984882bb0931396f4db462afce5e1527a9d8684049f60434d1f2116a8d",
   "frontend_url": "https://patchbound.vercel.app/",
-  "frontend_deployment_id": "dpl_5MZ7CKV4RfubPCqbnbHFUJeMFCLy",
+  "frontend_deployment_id": "dpl_3LAw1ijTKqBqmcDynqr1Ym2JSKZq",
+  "frontend_deployment_url": "https://patchbound-instvw2j2-bibidees-projects.vercel.app",
+  "frontend_source_commit": "35b383b",
   "validation_runs": {
-    "main": "https://github.com/Bibidee/patchbound/actions/runs/36892781139",
-    "master": "https://github.com/Bibidee/patchbound/actions/runs/36892784020",
+    "main": "https://github.com/Bibidee/patchbound/actions/runs/36897533311",
+    "master": "https://github.com/Bibidee/patchbound/actions/runs/36897537104",
     "combined_status_context": "Patchbound CI / combined status"
   },
   "lifecycle_evidence": {
@@ -40,6 +42,19 @@
       "claim_tx": "0x7ee4308d23d941bd14e50c8bc150e79ec710a725c34e2844300da4810189ca9a",
       "transfer_child": "0xa3567bf25d7f2b94833565dbf682f6dea497e6f7feca2719f8c899dea5e1e2b8",
       "transfer_value_credited": true
+    },
+    "browser_refund": {
+      "agreement_id": "4",
+      "requester": "0x4a7d76b8c4668a3426d6d54ec24b41fa87b532f5",
+      "developer": "0xFf203Bb65942F50CB81A8AF98c5F5bd9d8a79b54",
+      "create_tx": "0x723b64c59ce7463042b19d8d3f0f3d2a026a4a13c887945c0282f41ea1ce68b5",
+      "cancel_tx": "0xb08a7c6eb3391622a326972e5ac1fe8362c79362553f8d2b289744ca88aeb8d9",
+      "claim_tx": "0x097fe749097aeaa33e47f8764cf8823f848fc5fcb10870e4c2710427951bad73",
+      "transfer_child": "0x6d1d6aa9fcfebcfe8367459e8285d060afd7f529cb6c6d7a06c2a0edee02d5b8",
+      "transfer_value_credited": true,
+      "final_status": "CANCELLED",
+      "final_settlement_state": "REFUND_DISPATCHED",
+      "final_dispatched_amount": "1000000000000000"
     },
     "ci_required": {
       "agreement_id": "3",

@@ -92,7 +92,7 @@ The suite covers funded creation, role authorization, post-acceptance cancellati
 
 Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The historical deployments are retained for provenance only; production now points to the finalized hardened contract `0xF9C533e541d04bfcaac45A4cEc008154E9ed7471` on Studionet.
 
-The current production contract address is configured through `NEXT_PUBLIC_PATCHBOUND_CONTRACT`. The machine-verifiable release record is [`release-manifest.json`](release-manifest.json), checked by `npm run release:verify`. Real user lifecycle evidence remains separate from deployment evidence and is recorded only after genuine wallet-signed transactions. The production browser-wallet pass remains blocked until Computer Use has an injected EIP-1193 wallet.
+The current production contract address is configured through `NEXT_PUBLIC_PATCHBOUND_CONTRACT`. The machine-verifiable release record is [`release-manifest.json`](release-manifest.json), checked by `npm run release:verify`. Real user lifecycle evidence remains separate from deployment evidence and is recorded only after genuine wallet-signed transactions. Production Brave evidence now includes real requester-side creation, cancellation, refund dispatch, child finality, and refresh recovery; the remaining browser gaps are wrong-network switching, a second-account developer flow, and a production mobile viewport.
 
 ## Known V1 limitations
 
