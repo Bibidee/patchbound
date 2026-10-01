@@ -90,9 +90,9 @@ The suite covers funded creation, role authorization, post-acceptance cancellati
 
 ## Deployment
 
-Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The previously recorded Studionet contract and Vercel deployment refer to the earlier source revision. This remediation changes the contract ABI and settlement behavior, so the new source must be deployed and verified before the production frontend is repointed.
+Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The historical deployment is retained for provenance only; production now points to the finalized remediation contract on Studionet.
 
-Historical deployment records are retained for provenance only. The remediation deployment address, transaction, source hash, and Vercel deployment are intentionally blank until they are observed from the real signer and network.
+The current production contract address is configured through `NEXT_PUBLIC_PATCHBOUND_CONTRACT`. Real user lifecycle evidence remains separate from deployment evidence and is recorded only after genuine wallet-signed transactions.
 
 ## Known V1 limitations
 

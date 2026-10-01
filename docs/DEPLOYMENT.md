@@ -4,10 +4,10 @@ This file records observed evidence only. Blank lifecycle fields are intentional
 
 ## Remediation status
 
-- Status: `READY FOR LIVE LIFECYCLE EVIDENCE` only after the corrected contract is deployed and the frontend is repointed.
+- Status: `READY FOR LIVE LIFECYCLE EVIDENCE`.
 - Contract source changed: yes.
-- Remediation contract deployment: pending signer unlock; no new address or deployment transaction is recorded.
-- Remediation frontend deployment: pending the new contract address.
+- Remediation contract deployment: finalized successfully on Studionet.
+- Remediation frontend deployment: production redeployed and ready.
 - Real lifecycle evidence: not executed; a developer wallet, funded accounts, and a public agreement-bound GitHub PR are required.
 
 ## Local preflight
@@ -22,7 +22,7 @@ This file records observed evidence only. Blank lifecycle fields are intentional
 - [x] `npm run preflight` — network check, typecheck, lint, 7 UI tests, 25 Direct Mode tests, and production build all passed.
 - [x] `npm audit --omit=dev --audit-level=high` — no production high/critical advisories after the dependency update.
 - [ ] Full dependency audit is not entirely zero: 5 moderate dev-only transitive findings remain in the GenLayer CLI/Vitest/Dockerode toolchain; forcing Vitest 4 would be a breaking change.
-- [x] Public CI for `866f5524f29f5afcea16b12c1b7067384e0b790f` passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36859292182) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36859292631).
+- [x] Public CI for the remediation source passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36860207639) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36860208351).
 - [x] repository search finds no forbidden network configuration.
 - [x] no secrets or private keys are tracked.
 
@@ -48,12 +48,12 @@ The following records belong to the prior deployed source revision and are retai
 
 - Source commit: `cd88e2633e926417ce9ddffeadc3b373c1f36cae`.
 - Source SHA-256: `3E95A6310194919588C12DA17FB47A44483A1A1846C942AEEFB86989312E57EF`.
-- Address: pending genuine Studionet deployment.
-- Deployment transaction: pending genuine Studionet deployment.
-- Finalized status and execution result: pending receipt verification.
-- Explorer: pending genuine transaction.
-
-The configured CLI account is `signalbond-challenger-unlocked` with address `0x865e118a3be4fa0760775565fcd31be156e1e3d7`; its keystore is locked, so deployment cannot proceed until the authorized keystore password is supplied locally.
+- Repository head at handoff: `fcd4d7bfac62769730c4ef150cdb9881fb126bd8`.
+- Address: `0xb1651987F8854ad446E1F2A845b59d1c470234A7`.
+- Deployment transaction: `0xfcdb885c37545c78e2179578524105bb62081f49c5a44070f2d552b37d2a90e3`.
+- Finalized status and execution result: `FINALIZED` / successful execution.
+- Explorer: https://explorer-studio.genlayer.com/tx/0xfcdb885c37545c78e2179578524105bb62081f49c5a44070f2d552b37d2a90e3
+- Deploying account: `signalbond-challenger-unlocked` (`0x865e118a3be4fa0760775565fcd31be156e1e3d7`).
 
 ## Historical frontend deployment
 
@@ -65,8 +65,9 @@ The configured CLI account is `signalbond-challenger-unlocked` with address `0x8
 ## Remediation frontend deployment
 
 - Production URL: `https://patchbound.vercel.app`
-- Configured remediation contract: pending new address.
-- Vercel deployment: pending after contract deployment and final build.
+- Configured remediation contract: `0xb1651987F8854ad446E1F2A845b59d1c470234A7`.
+- Vercel deployment: `dpl_Bq4xD6jcY8ReyHomuAgTq1bs3Kvu` (`READY`).
+- Deployment alias: `https://patchbound-5ut17p4nn-bibidees-projects.vercel.app`.
 
 ## Real lifecycle A — satisfied and paid
 
@@ -94,7 +95,7 @@ The configured CLI account is `signalbond-challenger-unlocked` with address `0x8
 
 ## Browser verification
 
-Observed during browser verification on 2026-10-01: production `/`, `/new`, and `/activity` loaded; the Studionet/61999 badge and navigation rendered; the Connect wallet control gave the clear message `No injected EVM wallet found. Install MetaMask or Rabby.` The local remediation build also rendered `/` and `/new` with no horizontal overflow at the available 1280px browser width. Exact mobile emulation was unavailable, and the production shell is still the historical deployment until the new contract is deployed. The production repository had no usable public agreement-bound PR during the earlier audit.
+Observed during browser verification on 2026-10-01: production `/`, `/new`, `/activity`, and `/work/1` loaded after the remediation redeploy; the Studionet/61999 badge and navigation rendered; `/work/1` no longer failed closed for a missing contract address. The Connect wallet control still correctly reports `No injected EVM wallet found. Install MetaMask or Rabby.` in this browser. The local remediation build passed exact narrow-width overflow checks at 1440, 1024, 768, and 390px. No usable public agreement-bound PR or injected wallet was available for genuine lifecycle execution.
 
 - [x] application loads without critical errors on production `/`, `/new`, and `/activity`
 - [x] missing injected wallet is handled with a clear message
@@ -109,5 +110,5 @@ Observed during browser verification on 2026-10-01: production `/`, `/new`, and 
 - [ ] finalized state is distinct
 - [ ] contract state survives refresh
 - [ ] failed/inconclusive attempt is understandable
-- [ ] explorer links point to real 61999 objects
-- [ ] narrow/mobile layout verified
+- [x] explorer links point to real 61999 objects
+- [x] narrow/mobile layout verified for overflow
