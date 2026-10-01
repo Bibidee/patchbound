@@ -48,7 +48,7 @@ The following records belong to the prior deployed source revision and are retai
 
 - Source commit: `cd88e2633e926417ce9ddffeadc3b373c1f36cae`.
 - Source SHA-256: `3E95A6310194919588C12DA17FB47A44483A1A1846C942AEEFB86989312E57EF`.
-- Repository head at handoff: `fcd4d7bfac62769730c4ef150cdb9881fb126bd8`.
+- Repository head at handoff: `13960c9` (`Verify finalized transfer credit`).
 - Address: `0xb1651987F8854ad446E1F2A845b59d1c470234A7`.
 - Deployment transaction: `0xfcdb885c37545c78e2179578524105bb62081f49c5a44070f2d552b37d2a90e3`.
 - Finalized status and execution result: `FINALIZED` / successful execution.
@@ -66,8 +66,9 @@ The following records belong to the prior deployed source revision and are retai
 
 - Production URL: `https://patchbound.vercel.app`
 - Configured remediation contract: `0xb1651987F8854ad446E1F2A845b59d1c470234A7`.
-- Vercel deployment: `dpl_Bq4xD6jcY8ReyHomuAgTq1bs3Kvu` (`READY`).
-- Deployment alias: `https://patchbound-5ut17p4nn-bibidees-projects.vercel.app`.
+- Frontend repository commit: `13960c9`.
+- Vercel deployment: `dpl_EPAKM7jQmwDu9uiDtBozaxpqe4kU` (`READY`).
+- Deployment alias: `https://patchbound-84eak38he-bibidees-projects.vercel.app`.
 
 ## Real lifecycle A — satisfied and paid (pending public PR)
 
