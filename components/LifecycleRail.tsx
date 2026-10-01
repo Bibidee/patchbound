@@ -6,6 +6,7 @@ export function LifecycleRail({agreement, txStage}: {agreement: Agreement; txSta
   const consensus = txStage === "accepted";
   const acceptedTx = consensus || txStage === "finalized";
   const finalized = txStage === "finalized" || ["PAYABLE", "PAID", "CANCELLED", "EXPIRED"].includes(agreement.status);
+  const currentLabel = !accepted ? "Terms accepted" : !submitted ? "Delivery submitted" : !acceptedTx ? "Consensus processing" : !finalized ? "Accepted" : "";
   const items = [
     ["Agreement created", true, "Canonical record exists"],
     ["Terms accepted", accepted, accepted ? "Immutable lifecycle" : "Awaiting developer"],
@@ -17,7 +18,7 @@ export function LifecycleRail({agreement, txStage}: {agreement: Agreement; txSta
   return (
     <ol className="lifecycle-rail">
       {items.map(([label, done, detail]) => (
-        <li className={done ? "done" : ""} key={label}>
+        <li className={`${done ? "done" : ""} ${currentLabel === label ? "current" : ""}`} key={label}>
           <span className="rail-node" aria-hidden="true" />
           <div><strong>{label}</strong><small>{detail}</small></div>
         </li>

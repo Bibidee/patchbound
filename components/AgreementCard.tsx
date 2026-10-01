@@ -5,7 +5,7 @@ import {StatusPill} from "@/components/StatusPill";
 
 export function AgreementCard({agreement}: {agreement: Agreement}) {
   return (
-    <Link href={`/work/${agreement.id}`} className="agreement-card">
+    <Link href={`/work/${agreement.id}`} className={`agreement-card agreement-${agreement.status.toLowerCase()}`}>
       <div className="agreement-card-main">
         <div className="agreement-card-heading">
           <span className="agreement-id">#{agreement.id}</span>
