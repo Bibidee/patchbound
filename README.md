@@ -90,7 +90,7 @@ The suite covers funded creation, role authorization, post-acceptance cancellati
 
 ## Deployment
 
-Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The historical deployment is retained for provenance only; production now points to the finalized remediation contract on Studionet.
+Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The historical deployments are retained for provenance only; production now points to the finalized hardened contract `0xF9C533e541d04bfcaac45A4cEc008154E9ed7471` on Studionet.
 
 The current production contract address is configured through `NEXT_PUBLIC_PATCHBOUND_CONTRACT`. Real user lifecycle evidence remains separate from deployment evidence and is recorded only after genuine wallet-signed transactions.
 
