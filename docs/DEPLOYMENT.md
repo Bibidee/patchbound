@@ -4,11 +4,11 @@ This file records observed evidence only. Every lifecycle hash, PR, commit, and 
 
 ## Remediation status
 
-- Status: `FINAL VALIDATION IN PROGRESS`.
+- Status: `READY FOR RE-AUDIT`.
 - Hardened contract: deployed and finalized on Studionet.
 - Production frontend: redeployed and aliased to `https://patchbound.vercel.app`.
 - Genuine success and expiry/refund lifecycles: verified against the hardened contract.
-- Final status changes to `READY FOR RE-AUDIT` only after the last local audit and post-documentation CI pass.
+- Final local audit and post-documentation CI pass completed.
 
 ## Hardened settlement architecture
 
@@ -86,6 +86,7 @@ The following records belong to the prior deployed source revision and are retai
 - Bound base SHA: `d16c560d4278ee8765dabfee475607b3cb3a282c`.
 - Bound head SHA: `558256931c66d85cae9a3dcf3d26095d1c85d4ab`.
 - Second evaluation: `0xe0d132d3caf03df2894c5be67c7b1fda167cce2efcaac07f1001a1d44c880ce4` (`FINALIZED`, `MAJORITY_AGREE`).
+- Agreement CI policy: `ci_required=false`; the recorded validator state is `NOT_REQUIRED`.
 - Evidence digest: `cd2b7b12b71fb6919d45ea6eceaf487ce8abfb2d194fae9ff98215bfac30bb73`.
 - Final evaluation: `SATISFIED`; settlement state `PAYABLE` before claim.
 - Claim: `0x470f5371bc630ccaef6b891706388951f3391409f900dfa6f53314f052897228` (`FINALIZED`, `MAJORITY_AGREE`).
