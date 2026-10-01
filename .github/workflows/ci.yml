@@ -25,5 +25,18 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run test
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/gltest-direct
+          key: genvm-runners-v0.3.0-rc7
+      - name: Prepare Direct Mode GenVM runner
+        shell: bash
+        run: |
+          mkdir -p "$HOME/.cache/gltest-direct"
+          if [ ! -f "$HOME/.cache/gltest-direct/genvm-universal-v0.3.0-rc7.tar.xz" ]; then
+            curl --fail --location --retry 3 \
+              https://github.com/genlayerlabs/genvm/releases/download/v0.3.0-rc7/genvm-runners-all.tar.xz \
+              --output "$HOME/.cache/gltest-direct/genvm-universal-v0.3.0-rc7.tar.xz"
+          fi
       - run: pytest -q
       - run: npm run build
