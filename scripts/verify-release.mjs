@@ -1,0 +1,27 @@
+import {createHash} from "node:crypto";
+import {execFileSync} from "node:child_process";
+import {readFileSync} from "node:fs";
+import {fileURLToPath} from "node:url";
+import {resolve} from "node:path";
+
+const root = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
+const manifestPath = resolve(root, "release-manifest.json");
+const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
+const fail = message => { throw new Error(`Release manifest verification failed: ${message}`); };
+const required = ["project","network","chain_id","repository","repository_commit","contract_source_commit","contract_source_path","contract_sha256","contract_address","deployment_tx","frontend_url","frontend_deployment_id"];
+for (const field of required) if (manifest[field] === undefined || manifest[field] === "") fail(`missing ${field}`);
+if (manifest.project !== "PATCHBOUND") fail("project is not PATCHBOUND");
+if (manifest.network !== "GenLayer Studionet" || manifest.chain_id !== 61999) fail("network is not Studionet 61999");
+if (manifest.repository !== "https://github.com/Bibidee/patchbound") fail("repository provenance mismatch");
+if (manifest.contract_address !== "0xF9C533e541d04bfcaac45A4cEc008154E9ed7471") fail("contract address is not the hardened deployment");
+const contractPath = resolve(root, manifest.contract_source_path);
+const digest = createHash("sha256").update(readFileSync(contractPath)).digest("hex").toUpperCase();
+if (digest !== manifest.contract_sha256.toUpperCase()) fail(`contract hash mismatch: ${digest}`);
+if (manifest.contract_source_commit !== "d16c560d4278ee8765dabfee475607b3cb3a282c") fail("contract source commit mismatch");
+const expectedCommit = process.env.EXPECTED_RELEASE_COMMIT;
+const head = execFileSync("git", ["rev-parse", "HEAD"], {cwd:root, encoding:"utf8"}).trim();
+const anchor = expectedCommit || manifest.repository_commit;
+if (!/^[0-9a-f]{40}$/i.test(anchor)) fail("repository commit must be a full SHA");
+execFileSync("git", ["merge-base", "--is-ancestor", anchor, head], {cwd:root, stdio:"ignore"});
+if (expectedCommit && head !== expectedCommit) fail(`HEAD ${head} does not match EXPECTED_RELEASE_COMMIT ${expectedCommit}`);
+console.log(JSON.stringify({ok:true,head,anchor,contract_sha256:digest,contract_address:manifest.contract_address}));

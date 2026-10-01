@@ -4,11 +4,12 @@ This file records observed evidence only. Every lifecycle hash, PR, commit, and 
 
 ## Remediation status
 
-- Status: `READY FOR RE-AUDIT`.
+- Status: `NOT READY FOR FINAL AUDIT`.
+- Blocking item: real production write/finality browser evidence remains pending action-time confirmation; the Brave Computer Use session now has an injected EIP-1193 wallet on Studionet.
 - Hardened contract: deployed and finalized on Studionet.
 - Production frontend: redeployed and aliased to `https://patchbound.vercel.app`.
 - Genuine success and expiry/refund lifecycles: verified against the hardened contract.
-- Final local audit and post-documentation CI pass completed.
+- Release manifest verification is implemented in [`release-manifest.json`](../release-manifest.json) and `npm run release:verify`.
 
 ## Hardened settlement architecture
 
@@ -22,15 +23,20 @@ There is no public retry and no public confirmation method. GenLayer external tr
 - [x] `npm run cli -- --version` — GenLayer CLI `0.39.1`.
 - [x] `npm run typecheck`.
 - [x] `npm run lint` — clean after excluding generated caches.
-- [x] `npm run test` — 10 UI tests passed.
-- [x] `npm run direct:test` — 36 Python Direct Mode tests passed.
+- [x] `npm run release:verify` — manifest, contract hash, network, deployment address, and Git provenance verified.
+- [x] `npm run test` — 12 UI tests passed after wallet-boundary coverage was added.
+- [x] `npm run direct:test` — 37 Python Direct Mode tests passed after bounded-sequence invariant coverage was added.
 - [x] `npm run build` — production build completed successfully.
-- [x] `npm run preflight` — network check, typecheck, lint, 10 UI tests, 36 Direct Mode tests, and production build all passed.
+- [x] `npm run preflight` — network check, release verification, typecheck, lint, 12 UI tests, 37 Direct Mode tests, and production build all passed.
 - [x] `npm audit --omit=dev --audit-level=high` — no production high/critical advisories after the dependency update.
 - [ ] Full dependency audit is not entirely zero: 5 moderate dev-only transitive findings remain in the GenLayer CLI/Vitest/Dockerode toolchain; forcing Vitest 4 would be a breaking change.
 - [x] Public CI for the hardened source passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36877417761) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36877418062).
 - [x] repository search finds no forbidden network configuration.
 - [x] no secrets or private keys are tracked.
+
+## Machine-verifiable release record
+
+The current release record is [`release-manifest.json`](../release-manifest.json). It records the immutable deployed contract source commit and SHA-256, hardened contract address and deployment transaction, production frontend deployment, CI status context, real success/refund lifecycles, the real `ci_required=true` three-stage lifecycle, and two additional hostile live transactions. Run `npm run release:verify` to verify the local contract bytes and Git ancestry without contacting a mutable service.
 
 ## Network
 
@@ -95,6 +101,22 @@ The following records belong to the prior deployed source revision and are retai
 
 This proves recovery from an inconclusive evaluation without reopening or mutating agreement terms. Only the satisfied attempt became payable.
 
+## Real lifecycle C — required CI pending, failure, success, and payout
+
+- Contract: `0xF9C533e541d04bfcaac45A4cEc008154E9ed7471`.
+- Agreement ID: `3`; reward `10000000000000000` wei (`0.01 GEN`); `ci_required=true`.
+- Create: `0xf296b4a47853d64d1888c3c56e9b17749213eca97f1d30b8b2f750a941bd13a0` (`FINALIZED`).
+- Accept: `0xd73fba65400b7f165d67f1271c8487e4eee149ceab77bc1fb97273fe731b7e6f` (`FINALIZED`).
+- Public evidence PR: [#4](https://github.com/Bibidee/patchbound/pull/4); base SHA `860108e38072418f2d837584f0ed12a94cf2ae0f`.
+- Stage A: head `1eda4f5974aeba0a129ca23d95a54f828a8a88f6`, real combined status `PENDING`, evaluation `0xb0a3530875117cd1f878a741f164deffa9a012abfcb0d326a2ed9d7f98e07c67`, outcome `INCONCLUSIVE`, digest `c6519d6581f44abb2f70040528c9d3970a29ae12cdc10423c6b6fab00299c92c`; agreement remained `ACTIVE`.
+- Stage B: head `583068bf4395d3009b979ebe8cd2534ff44a04bc`, real combined status `FAILURE`, evaluation `0x998126d843e138cfe7b9cc8efb7dde4b9ec2afaca01d58b57719c5cd5d5501f0`, outcome `NOT_SATISFIED`, digest `77d73b315d591d37566d849d197d068a8f217427bbc686853e0b1fa1504e3fa8`; agreement remained `ACTIVE`.
+- Stage C: head `c5a023415e55ed2338143f08869ea4e04a0cc318`, real combined status `SUCCESS`, evaluation `0x138b35400be16cbcdcd6c253f91b00d9e97bb78a55323cad898ff2f5c0513509`, outcome `SATISFIED`, digest `bb82a0de3335829586639190aceb3e74b54aa1f781f19cbc80ca4c05074eabe8`.
+- Claim: `0x11bbabfc5d97f7d426d96504cef9d9a25c5885cbd7cd318b8beb086a8f0f9a82` (`FINALIZED`).
+- Transfer child: `0x4acb35fa42baacb0f62adc707935ac2fa14e3211825a57d71521cce82b7e5dd8`; `value_credited=true`.
+- Final canonical state: `PAYABLE` / `PAYOUT_DISPATCHED`; `dispatched_amount=10000000000000000`; developer and requester claimable balances `0`.
+
+This is the genuine public-CI lifecycle proof. The exact combined status is published by Patchbound CI under `Patchbound CI / combined status` for the PR head SHA.
+
 ## Real lifecycle B — expiry and refund dispatch
 
 - Contract: `0xF9C533e541d04bfcaac45A4cEc008154E9ed7471`.
@@ -115,23 +137,23 @@ This proves recovery from an inconclusive evaluation without reopening or mutati
 
 ## Browser verification
 
-Observed during browser verification on 2026-10-01: production `/` and `/work/1` loaded after the hardened redeploy; the Studionet/61999 badge and navigation rendered; `/work/1` loaded canonical agreement `1` and displayed `SATISFIED`, `PAYOUT_DISPATCHED`, PR #3, and its bound head SHA after refresh. The browser had no injected EIP-1193 wallet, so it displayed the safe disconnected `Connect wallet` state. Signed direct writes verified the wallet write path and lifecycle independently. The local build passed narrow-width overflow checks at 1440, 1024, 768, and 390px.
+Observed through Computer Use in Brave on 2026-10-01: production `/` and `/work/1` loaded; the Studionet/61999 badge and navigation rendered; the Brave-injected account `0x4a7d76b8c4668a3426d6d54ec24b41fa87b532f5` connected and displayed; app-level disconnect/reconnect worked; `/work/1` displayed canonical agreement `1` with `SATISFIED`, `PAYOUT_DISPATCHED`, PR #3, and its bound head SHA after refresh. Funded browser writes were not started without action-time confirmation. See [`docs/BROWSER_E2E.md`](BROWSER_E2E.md) for the observed-only matrix.
 
 - [x] application loads without critical errors on production `/` and `/work/1`
 - [x] missing injected wallet is handled with a clear disconnected state
-- [ ] connect works with injected EIP-1193 wallet
-- [ ] disconnect works
-- [ ] account changes update UI
+- [x] connect works with injected EIP-1193 wallet
+- [x] disconnect works
+- [ ] account changes update UI from a real Brave `accountsChanged` event
 - [ ] wrong network is detected
 - [ ] switching targets 61999
 - [ ] write reaches wallet
 - [ ] submitted state is shown
 - [ ] accepted state is labelled provisional
 - [ ] finalized state is distinct
-- [ ] contract state survives refresh
+- [x] contract state survives refresh
 - [ ] failed/inconclusive attempt is understandable
 - [x] explorer links point to real 61999 objects
-- [x] narrow/mobile layout verified for overflow
+- [ ] narrow/mobile layout verified in Computer Use production browser (local narrow-width checks remain separate evidence)
 
 ## Historical deployments not used as remediation evidence
 
@@ -145,5 +167,5 @@ The following records belong to earlier source revisions and are retained only f
 ## Remaining limitations
 
 - GenLayer external child transfers are asynchronous. The contract cannot inspect a later child receipt, and a failed child transfer does not automatically return value to the sender. The safe policy is one emission with honest dispatch accounting; no public retry or confirmation path is exposed.
-- Browser wallet write-path checks require an injected EIP-1193 wallet on the test host. The absence of one was handled safely and did not block signed direct Studionet lifecycle verification.
+- Browser wallet write-path checks require an injected EIP-1193 wallet on the Computer Use test host. Brave now provides one, but funded writes still require action-time confirmation; the separate signed direct Studionet lifecycle verification is complete.
 - Dev-only moderate dependency findings remain documented; production high/critical audit findings are clear.

@@ -25,6 +25,10 @@ Repository code, patches, filenames, commit messages, issue text and pull-reques
 - there is no public retry or confirmation method, because the contract cannot independently prove that an asynchronous child failed or credited its recipient;
 - aggregate `claimable` is derived from undispatched agreement entitlements and cannot authorize a second emission for an already dispatched agreement.
 
+The deployed CI-required path was exercised against a real public PR with the exact Patchbound combined status context. A pending status produced `INCONCLUSIVE`, a failed status produced `NOT_SATISFIED`, and a successful status produced `SATISFIED`; the agreement stayed active until the successful attempt and payout.
+
+The release record is machine-checked by `npm run release:verify`. It validates the deployed contract source bytes, immutable source commit, Studionet chain, hardened address, and Git ancestry without embedding credentials or private keys.
+
 ## External evidence
 
 GitHub is an external authority and can be unavailable, rate-limited or inconsistent. The safe response is `INCONCLUSIVE` when reliable evidence cannot be obtained. Consensus compares outcome, head/base SHA, CI state and evidence digest; the free-form explanation is informational and not consensus-critical. Consensus decentralizes interpretation of the evidence; it does not decentralize GitHub itself.

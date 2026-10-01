@@ -1,9 +1,13 @@
-import {describe,expect,it,beforeEach,afterEach} from "vitest";
-import {cleanup,render,screen} from "@testing-library/react";
+import {describe,expect,it,beforeEach,afterEach,vi} from "vitest";
+import {cleanup,render,screen,waitFor} from "@testing-library/react";
 import {ExecutionResult} from "genlayer-js/types";
 import {executionFailed,executionSucceeded,transferSucceeded} from "@/lib/genlayer";
 import {TxPanel} from "@/components/TxPanel";
 import {LifecycleRail} from "@/components/LifecycleRail";
+import {WalletButton} from "@/components/WalletButton";
+import {WalletProvider} from "@/components/WalletProvider";
+import {chainHex,ensureStudionet} from "@/lib/wallet";
+import {short} from "@/lib/format";
 import {findPendingTransaction,removePendingTransaction,savePendingTransaction} from "@/lib/tx-tracking";
 import type {Agreement} from "@/lib/types";
 
@@ -16,6 +20,29 @@ const agreement = (overrides: Partial<Agreement> = {}): Agreement => ({
 });
 
 afterEach(() => cleanup());
+
+const installProvider = (initialAccounts = ["0xabcdef1234567890abcdef1234567890abcdef12"], initialChain = "0xF1") => {
+  let accounts = initialAccounts;
+  let chain = initialChain;
+  const listeners = new Map<string, (...args: unknown[]) => void>();
+  const provider = {
+    request: vi.fn(async ({method,params}: {method:string;params?:unknown[]}) => {
+      if (method === "eth_accounts") return accounts;
+      if (method === "eth_chainId") return chain;
+      if (method === "eth_requestAccounts") return accounts;
+      if (method === "wallet_switchEthereumChain") { chain = String((params?.[0] as {chainId:string}).chainId); return null; }
+      if (method === "wallet_addEthereumChain") { chain = String((params?.[0] as {chainId:string}).chainId); return null; }
+      throw new Error(`Unexpected provider method: ${method}`);
+    }),
+    on: vi.fn((event:string, callback:(...args:unknown[]) => void) => { listeners.set(event, callback); }),
+    removeListener: vi.fn((event:string) => { listeners.delete(event); }),
+    emit(event:string, ...args:unknown[]) { listeners.get(event)?.(...args); },
+    setAccounts(next:string[]) { accounts = next; },
+    setChain(next:string) { chain = next; },
+  };
+  Object.defineProperty(window, "ethereum", {configurable:true, writable:true, value:provider});
+  return provider;
+};
 
 describe("GenLayer execution semantics", () => {
   it("requires FINISHED_WITH_RETURN for success", () => {
@@ -35,6 +62,30 @@ describe("GenLayer execution semantics", () => {
     expect(screen.getByText("Transaction submitted.")).toBeTruthy();
     expect(screen.getByText(/Do not submit this action again/)).toBeTruthy();
     expect(screen.getByRole("button", {name: "Resume tracking"})).toBeTruthy();
+  });
+});
+
+describe("wallet boundary", () => {
+  it("switches a wrong-network provider to Studionet", async () => {
+    const provider = installProvider([], "0x1");
+    await ensureStudionet(provider);
+    expect(provider.request).toHaveBeenCalledWith({method:"wallet_switchEthereumChain",params:[{chainId:chainHex}]});
+  });
+
+  it("renders network changes, reacts to account events, and disconnects", async () => {
+    const provider = installProvider(["0xabcdef1234567890abcdef1234567890abcdef12"], "0x1");
+    render(<WalletProvider><WalletButton /></WalletProvider>);
+    await waitFor(() => expect(screen.getByRole("button", {name:/NETWORK CHANGE REQUIRED/})).toBeTruthy());
+    screen.getByRole("button", {name:/NETWORK CHANGE REQUIRED/}).click();
+    await screen.findByRole("button", {name:"Switch to Studionet"});
+    screen.getByRole("button", {name:"Switch to Studionet"}).click();
+    await waitFor(() => expect(screen.getByRole("button", {name:/STUDIONET/})).toBeTruthy());
+    provider.setAccounts(["0x1234567890abcdef1234567890abcdef12345678"]);
+    provider.emit("accountsChanged", ["0x1234567890abcdef1234567890abcdef12345678"]);
+    await waitFor(() => expect(screen.getByRole("button", {name:/STUDIONET.*0x12345…45678/})).toBeTruthy());
+    provider.setAccounts([]);
+    provider.emit("accountsChanged", []);
+    await waitFor(() => expect(screen.getByRole("button", {name:"Connect wallet"})).toBeTruthy());
   });
 });
 

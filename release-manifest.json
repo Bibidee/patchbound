@@ -1,0 +1,99 @@
+{
+  "project": "PATCHBOUND",
+  "network": "GenLayer Studionet",
+  "chain_id": 61999,
+  "rpc": "https://studio.genlayer.com/api",
+  "explorer": "https://explorer-studio.genlayer.com",
+  "repository": "https://github.com/Bibidee/patchbound",
+  "repository_commit": "860108e38072418f2d837584f0ed12a94cf2ae0f",
+  "repository_commit_policy": "This is the immutable CI-status provenance anchor. The release commit must descend from it; EXPECTED_RELEASE_COMMIT may require an exact local or CI release commit.",
+  "contract_source_commit": "d16c560d4278ee8765dabfee475607b3cb3a282c",
+  "contract_source_path": "contracts/patchbound.py",
+  "contract_sha256": "FBD84070CBA426AC69EA9FA6A377FB46770F4CC29ECEDC29C55C4E68DD1C29DB",
+  "contract_address": "0xF9C533e541d04bfcaac45A4cEc008154E9ed7471",
+  "deployment_tx": "0xce5cf9984882bb0931396f4db462afce5e1527a9d8684049f60434d1f2116a8d",
+  "frontend_url": "https://patchbound.vercel.app/",
+  "frontend_deployment_id": "dpl_5MZ7CKV4RfubPCqbnbHFUJeMFCLy",
+  "validation_runs": {
+    "main": "https://github.com/Bibidee/patchbound/actions/runs/36892781139",
+    "master": "https://github.com/Bibidee/patchbound/actions/runs/36892784020",
+    "combined_status_context": "Patchbound CI / combined status"
+  },
+  "lifecycle_evidence": {
+    "success": {
+      "agreement_id": "1",
+      "create_tx": "0x6dc0ef3ab3a71ebb59c652d11134451b6b2d164a9a469b4f5a7df5b2cb2efe96",
+      "accept_tx": "0x3756a7d7032813d38f8b2f83bdeb2e2079f8395a6e849e55114d668b26625c8e",
+      "evaluation_txs": [
+        "0x695dcdbf21f5e29d0740dad3f877d55b1a1805db1a9ecdca75dd62bd37dbb4d9",
+        "0xe0d132d3caf03df2894c5be67c7b1fda167cce2efcaac07f1001a1d44c880ce4"
+      ],
+      "claim_tx": "0x470f5371bc630ccaef6b891706388951f3391409f900dfa6f53314f052897228",
+      "transfer_child": "0x34611caf9444551c2d78ecde75937e232a94540bfdf3bd1bfa75fe6eb564cd65",
+      "transfer_value_credited": true
+    },
+    "refund": {
+      "agreement_id": "2",
+      "create_tx": "0xa1f493122860a79406220c149dd363b75d0fcbfa90305204a8bfbcfb0d2fb80d",
+      "close_expired_tx": "0x955b2578d5add9fffb787a0db28a61ce3b11225e392eaa9b065eac450a4ff678",
+      "claim_tx": "0x7ee4308d23d941bd14e50c8bc150e79ec710a725c34e2844300da4810189ca9a",
+      "transfer_child": "0xa3567bf25d7f2b94833565dbf682f6dea497e6f7feca2719f8c899dea5e1e2b8",
+      "transfer_value_credited": true
+    },
+    "ci_required": {
+      "agreement_id": "3",
+      "create_tx": "0xf296b4a47853d64d1888c3c56e9b17749213eca97f1d30b8b2f750a941bd13a0",
+      "accept_tx": "0xd73fba65400b7f165d67f1271c8487e4eee149ceab77bc1fb97273fe731b7e6f",
+      "pr": 4,
+      "pr_url": "https://github.com/Bibidee/patchbound/pull/4",
+      "base_sha": "860108e38072418f2d837584f0ed12a94cf2ae0f",
+      "stage_a": {
+        "head_sha": "1eda4f5974aeba0a129ca23d95a54f828a8a88f6",
+        "ci_state": "PENDING",
+        "outcome": "INCONCLUSIVE",
+        "evaluation_tx": "0xb0a3530875117cd1f878a741f164deffa9a012abfcb0d326a2ed9d7f98e07c67",
+        "evidence_digest": "c6519d6581f44abb2f70040528c9d3970a29ae12cdc10423c6b6fab00299c92c"
+      },
+      "stage_b": {
+        "head_sha": "583068bf4395d3009b979ebe8cd2534ff44a04bc",
+        "ci_state": "FAILURE",
+        "outcome": "NOT_SATISFIED",
+        "evaluation_tx": "0x998126d843e138cfe7b9cc8efb7dde4b9ec2afaca01d58b57719c5cd5d5501f0",
+        "evidence_digest": "77d73b315d591d37566d849d197d068a8f217427bbc686853e0b1fa1504e3fa8"
+      },
+      "stage_c": {
+        "head_sha": "c5a023415e55ed2338143f08869ea4e04a0cc318",
+        "ci_state": "SUCCESS",
+        "outcome": "SATISFIED",
+        "evaluation_tx": "0x138b35400be16cbcdcd6c253f91b00d9e97bb78a55323cad898ff2f5c0513509",
+        "evidence_digest": "bb82a0de3335829586639190aceb3e74b54aa1f781f19cbc80ca4c05074eabe8",
+        "claim_tx": "0x11bbabfc5d97f7d426d96504cef9d9a25c5885cbd7cd318b8beb086a8f0f9a82",
+        "transfer_child": "0x4acb35fa42baacb0f62adc707935ac2fa14e3211825a57d71521cce82b7e5dd8",
+        "transfer_value_credited": true,
+        "final_status": "PAYABLE",
+        "final_settlement_state": "PAYOUT_DISPATCHED",
+        "final_dispatched_amount": "10000000000000000"
+      }
+    }
+  },
+  "hostile_live_transactions": [
+    {
+      "tx": "0x813bb7c32582c89c1125edd665641d76e4b7e772f15169dacfe15cbbd5fe7669",
+      "agreement_id": "3",
+      "caller_role": "requester",
+      "action": "claim_funds",
+      "expected": "rollback",
+      "reason": "No funds from this agreement are claimable by this wallet",
+      "children": []
+    },
+    {
+      "tx": "0xc4081ec4629f650f4bc871034e37eaa7dbcde7b33e5c95c819ad109181a693d6",
+      "agreement_id": "2",
+      "caller_role": "developer",
+      "action": "claim_funds",
+      "expected": "rollback",
+      "reason": "No funds from this agreement are claimable by this wallet",
+      "children": []
+    }
+  ]
+}

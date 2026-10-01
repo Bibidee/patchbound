@@ -457,3 +457,44 @@ def test_conservation_after_dispatch_is_bounded_by_reward(direct_vm, env):
     assert int(after["dispatched_amount"]) <= int(after["reward"])
     assert c.get_claimable(address_hex(developer)) == "0"
     assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_DISPATCHED"
+
+def test_bounded_sequences_preserve_entitlements_and_terminality(direct_vm, direct_deploy):
+    c = direct_deploy(CONTRACT)
+    requester, developer, outsider = create_address("sequence-requester"), create_address("sequence-developer"), create_address("sequence-outsider")
+    deadlines = (1893628800, 1894665600)
+    refund_ids = []
+    for issue in (41, 42):
+        direct_vm.sender = requester
+        direct_vm.value = GEN
+        aid = c.open_agreement(address_hex(developer), "acme/widget", issue, ["Each bounded sequence preserves its own entitlement."], False, *deadlines)
+        direct_vm.value = 0
+        c.cancel_offer(aid)
+        refund_ids.append(aid)
+
+    assert c.get_claimable(address_hex(requester)) == str(2 * GEN)
+    direct_vm.sender = developer
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(refund_ids[0])
+    direct_vm.sender = requester
+    c.claim_funds(refund_ids[1])
+    c.claim_funds(refund_ids[0])
+
+    payout_id = _make_satisfied(direct_vm, c, requester, developer, 43, "c" * 40)
+    assert c.get_claimable(address_hex(developer)) == str(GEN)
+    direct_vm.sender = developer
+    c.claim_funds(payout_id)
+    payout = c.get_agreement(payout_id)
+    assert payout["settlement_state"] == "PAYOUT_DISPATCHED"
+    assert payout["dispatched_amount"] == payout["reward"] == str(GEN)
+    assert c.get_claimable(address_hex(developer)) == "0"
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(payout_id)
+    assert c.get_agreement(payout_id)["settlement_state"] == "PAYOUT_DISPATCHED"
+
+    dispatched = [c.get_agreement(aid) for aid in (*refund_ids, payout_id)]
+    assert all(int(item["dispatched_amount"]) <= int(item["reward"]) for item in dispatched)
+    assert sum(int(item["dispatched_amount"]) for item in dispatched) == sum(int(item["reward"]) for item in dispatched)
+    assert all(item["settlement_state"] in ("REFUND_DISPATCHED", "PAYOUT_DISPATCHED") for item in dispatched)
+    direct_vm.sender = outsider
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(payout_id)

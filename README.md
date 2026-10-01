@@ -86,13 +86,13 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-The suite covers funded creation, role authorization, post-acceptance cancellation protection, refunds, malformed inputs, satisfactory adjudication, missing submission marker, unavailable evidence, uncertainty, exact-commit replay protection, settlement isolation and hostile payout attempts. The current Direct Mode run has 36 passing tests.
+The suite covers funded creation, role authorization, post-acceptance cancellation protection, refunds, malformed inputs, satisfactory adjudication, missing submission marker, unavailable evidence, uncertainty, exact-commit replay protection, settlement isolation, hostile payout attempts, and bounded-sequence invariants for reward conservation and terminality. The current Direct Mode run has 37 passing tests.
 
 ## Deployment
 
 Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The historical deployments are retained for provenance only; production now points to the finalized hardened contract `0xF9C533e541d04bfcaac45A4cEc008154E9ed7471` on Studionet.
 
-The current production contract address is configured through `NEXT_PUBLIC_PATCHBOUND_CONTRACT`. Real user lifecycle evidence remains separate from deployment evidence and is recorded only after genuine wallet-signed transactions.
+The current production contract address is configured through `NEXT_PUBLIC_PATCHBOUND_CONTRACT`. The machine-verifiable release record is [`release-manifest.json`](release-manifest.json), checked by `npm run release:verify`. Real user lifecycle evidence remains separate from deployment evidence and is recorded only after genuine wallet-signed transactions. The production browser-wallet pass remains blocked until Computer Use has an injected EIP-1193 wallet.
 
 ## Known V1 limitations
 

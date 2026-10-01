@@ -12,7 +12,8 @@
     "direct:test": "node scripts/direct-test.mjs",
     "cli": "genlayer",
     "network:check": "node scripts/network-check.mjs",
-    "preflight": "npm run network:check && npm run typecheck && npm run lint && npm run test && npm run direct:test && npm run build"
+    "release:verify": "node scripts/verify-release.mjs",
+    "preflight": "npm run network:check && npm run release:verify && npm run typecheck && npm run lint && npm run test && npm run direct:test && npm run build"
   },
   "dependencies": {
     "genlayer-js": "1.1.8",
