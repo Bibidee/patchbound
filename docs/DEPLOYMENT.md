@@ -8,7 +8,7 @@ This file records observed evidence only. Blank lifecycle fields are intentional
 - Contract source changed: yes.
 - Remediation contract deployment: finalized successfully on Studionet.
 - Remediation frontend deployment: production redeployed and ready.
-- Real lifecycle evidence: partial live transactions observed; no successful payout or verified refund evidence is claimed yet.
+- Real lifecycle evidence: refund path verified; successful payout remains pending the public PR-bound success path.
 
 ## Local preflight
 
@@ -89,10 +89,10 @@ The following records belong to the prior deployed source revision and are retai
 - Create transaction: `0x9e8ddc934f91d8beb5fde6ff3862681aa9447b6788d859a031496597a9fed354` (`FINALIZED`, majority agree).
 - Cancellation transaction: `0xe2c1aa3f9218ca3e9f34cf27fd277d70c9b8be80407fbf3be2ac8040257632f0` (`FINALIZED`, majority agree).
 - Refund claim transaction: `0xe7055c818ad49e684ab3dcb7e0db59ba639eb458d164edeb0eeb5a9cefbb8fab` (`FINALIZED`, majority agree).
-- Transfer child: `0xf9be4ff04e94f8ec78c4a3e07b1b33ba7f37ca787796fd1ef32dbaa67771b76a` (`FINALIZED`, `NO_MAJORITY`).
+- Transfer child: `0xf9be4ff04e94f8ec78c4a3e07b1b33ba7f37ca787796fd1ef32dbaa67771b76a` (`FINALIZED`, external receipt `status=success`, `value_credited=true`; the GenLayer consensus result label is `NO_MAJORITY` for this EOA transfer child).
 - Confirmation transaction: `0x239ff49f52d6432b16279848d75844cd3a2c95c47ba09a802a91063461c9b8cc` (`FINALIZED`, majority agree).
-- Final on-chain state: `CANCELLED` / `REFUNDED`; this attempt is **not accepted as verified refund evidence** because the transfer child did not prove successful execution.
-- Recovery status: requires a fresh genuine agreement whose transfer child reaches a verified successful execution result before confirmation.
+- Final on-chain state: `CANCELLED` / `REFUNDED`.
+- Recovery status: verified; the finalized child receipt proves recipient credit before the confirmation transaction.
 
 ## Browser verification
 

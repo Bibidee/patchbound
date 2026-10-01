@@ -1,7 +1,7 @@
 import {describe,expect,it,beforeEach,afterEach} from "vitest";
 import {cleanup,render,screen} from "@testing-library/react";
 import {ExecutionResult} from "genlayer-js/types";
-import {executionFailed,executionSucceeded} from "@/lib/genlayer";
+import {executionFailed,executionSucceeded,transferSucceeded} from "@/lib/genlayer";
 import {TxPanel} from "@/components/TxPanel";
 import {LifecycleRail} from "@/components/LifecycleRail";
 import {findPendingTransaction,removePendingTransaction,savePendingTransaction} from "@/lib/tx-tracking";
@@ -22,6 +22,12 @@ describe("GenLayer execution semantics", () => {
     expect(executionSucceeded({txExecutionResultName: ExecutionResult.FINISHED_WITH_RETURN})).toBe(true);
     expect(executionSucceeded({txExecutionResultName: ExecutionResult.FINISHED_WITH_ERROR})).toBe(false);
     expect(executionFailed({txExecutionResultName: ExecutionResult.FINISHED_WITH_ERROR})).toBe(true);
+  });
+
+  it("recognizes finalized external value credit separately from GenVM execution", () => {
+    expect(transferSucceeded({value_credited: true})).toBe(true);
+    expect(transferSucceeded({value_credited: false})).toBe(false);
+    expect(transferSucceeded({txExecutionResultName: ExecutionResult.FINISHED_WITH_RETURN})).toBe(false);
   });
 
   it("renders submitted tracking as unknown rather than a resubmit failure", () => {

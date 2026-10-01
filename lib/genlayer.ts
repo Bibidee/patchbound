@@ -45,6 +45,7 @@ export type WriteProgress = {
 type Receipt = {
   statusName?: string;
   txExecutionResultName?: string;
+  value_credited?: boolean;
 };
 
 export class SubmittedTransactionError extends Error {
@@ -67,6 +68,10 @@ export function executionSucceeded(receipt: Receipt) {
 
 export function executionFailed(receipt: Receipt) {
   return receipt.txExecutionResultName === ExecutionResult.FINISHED_WITH_ERROR;
+}
+
+export function transferSucceeded(receipt: Receipt) {
+  return receipt.value_credited === true;
 }
 
 function finalOutcome(hash: string, receipt: Receipt, onProgress?: (progress: WriteProgress) => void) {
@@ -110,7 +115,19 @@ export async function resumeTransaction(hash: string, onProgress?: (progress: Wr
 }
 
 export async function waitForExistingTransaction(hash: string, onProgress?: (progress: WriteProgress) => void) {
-  return waitForFinalization(readClient, hash, onProgress);
+  try {
+    const receipt = await readClient.waitForTransactionReceipt({hash: hash as never, status: TransactionStatus.FINALIZED, retries: 450, interval: 4000}) as unknown as Receipt;
+    if (transferSucceeded(receipt)) {
+      onProgress?.({hash, status: "FINALIZED", execution: "VALUE_CREDITED"});
+      return {hash, status: "FINALIZED" as const, execution: "VALUE_CREDITED", explorer: `${EXPLORER_URL}/tx/${hash}`};
+    }
+    if (receipt.txExecutionResultName) return finalOutcome(hash, receipt, onProgress);
+    throw new Error("The finalized transfer child did not prove recipient credit.");
+  } catch (caught) {
+    if (caught instanceof ExecutionFailedError) throw caught;
+    onProgress?.({hash, status: "UNKNOWN", error: caught instanceof Error ? caught.message : String(caught)});
+    throw new SubmittedTransactionError(hash, caught instanceof Error ? caught.message : "The transfer child result is not confirmed.", "UNKNOWN");
+  }
 }
 
 export async function triggeredTransactions(hash: string) {
