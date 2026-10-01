@@ -1,9 +1,65 @@
-"use client";import {use, useCallback,useEffect,useState} from "react";import {useWallet,onStudionet} from "@/components/WalletProvider";import {api,write} from "@/lib/genlayer";import type {Agreement,Attempt,TxStage} from "@/lib/types";import {StatusPill} from "@/components/StatusPill";import {TxPanel} from "@/components/TxPanel";import {gen,short,when} from "@/lib/format";import {EXPLORER_URL} from "@/lib/constants";
-export default function Work({params}:{params:Promise<{id:string}>}){const {id}=use(params);const w=useWallet();const [a,setA]=useState<Agreement|null>(null);const [attempts,setAttempts]=useState<Attempt[]>([]);const [claimable,setClaimable]=useState("0");const [pr,setPr]=useState("");const [stage,setStage]=useState<TxStage>("idle");const [hash,setHash]=useState("");const [error,setError]=useState("");
-const load=useCallback(async()=>{try{const x=await api.agreement(id);setA(x);setAttempts(await api.attempts(id));if(w.address)setClaimable(await api.claimable(w.address))}catch(e){setError(e instanceof Error?e.message:String(e))}},[id,w.address]);useEffect(()=>{void load()},[load]);
-const act=async(name:string,args:unknown[]=[])=>{try{setError("");if(!w.address||!w.provider)throw new Error("Connect your injected wallet first.");if(!onStudionet(w.chainId))throw new Error("Switch to Studionet 61999 first.");setStage("wallet");const out=await write(w.address as `0x${string}`,w.provider as never,name,args,0n,p=>{setHash(p.hash);setStage(p.status.includes("ACCEPT")?"accepted":"submitted")});setHash(out.hash);setStage("finalized");await load()}catch(e){setStage("failed");setError(e instanceof Error?e.message:String(e))}};
-if(!a)return <div className="page narrow"><div className="empty"><h3>Loading agreement #{id}</h3><p>{error||"Reading canonical state from GenLayer…"}</p></div></div>;
-const me=w.address.toLowerCase();const requester=me===a.requester.toLowerCase(),developer=me===a.developer.toLowerCase();return <div className="workspace"><aside className="terms"><span className="kicker">AGREEMENT #{a.id}</span><div className="workTitle"><h1>{a.repo}</h1><StatusPill status={a.status}/></div><dl><dt>Requester</dt><dd>{short(a.requester,7)}</dd><dt>Developer</dt><dd>{short(a.developer,7)}</dd><dt>Reward</dt><dd>{gen(a.reward)} GEN</dd><dt>Offer deadline</dt><dd>{when(a.offer_deadline)}</dd><dt>Delivery deadline</dt><dd>{when(a.delivery_deadline)}</dd><dt>Public CI</dt><dd>{a.ci_required?"Required":"Not required"}</dd></dl><h3>Acceptance clauses</h3><ol className="clauses">{a.clauses.map((c,i)=><li key={i}><span>{String(i+1).padStart(2,"0")}</span>{c}</li>)}</ol>{a.issue>0&&<a className="textLink" href={`https://github.com/${a.repo}/issues/${a.issue}`} target="_blank" rel="noreferrer">Context issue #{a.issue} ↗</a>}</aside>
-<section className="delivery"><div className="panelHead"><div><span className="kicker">DELIVERY</span><h2>Commit-bound evidence</h2></div><span className="muted">Attempt {a.attempt_count}</span></div>{a.status==="OFFERED"&&<div className="actionBox"><h3>Terms are waiting for the designated developer.</h3><p>Once accepted, the requester can no longer cancel this agreement.</p>{developer&&<button className="primary" onClick={()=>act("accept_terms",[id])}>Accept immutable terms →</button>}{requester&&<button className="secondary" onClick={()=>act("cancel_offer",[id])}>Cancel unaccepted offer</button>}</div>}{a.status==="ACTIVE"&&<div className="actionBox"><h3>Submit a public pull request for evaluation.</h3><p>Before evaluating, put this marker in the PR description:</p><code>PATCHBOUND / agreement {a.id} / developer {a.developer}</code>{developer&&<div className="inlineForm"><input value={pr} onChange={e=>setPr(e.target.value)} placeholder="PR number"/><button className="primary" onClick={()=>act("evaluate_delivery",[id,Number(pr)])}>Evaluate this patch →</button></div>}<p className="hint">Validators fetch GitHub themselves, bind the exact head SHA, inspect the bounded diff and independently judge every clause.</p></div>}{a.status==="PAYABLE"&&<div className="result satisfied"><span className="kicker">FINAL OUTCOME</span><h3>SATISFIED</h3><p>{a.explanation}</p><p>Bound commit <code>{a.winning_sha}</code> · PR #{a.winning_pr}</p>{developer&&BigInt(claimable)>0n&&<button className="primary" onClick={()=>act("claim_funds")}>Claim {gen(claimable)} GEN →</button>}</div>}{["PAID","CANCELLED","EXPIRED"].includes(a.status)&&<div className="result"><span className="kicker">TERMINAL STATE</span><h3>{a.status}</h3><p>{a.explanation||"This agreement is closed."}</p></div>}
-<div className="attempts"><h3>Evaluation attempts</h3>{attempts.length===0?<p className="muted">No patch has been evaluated yet.</p>:attempts.map((x,i)=><article key={`${x.sha}-${i}`}><div><StatusPill status={x.outcome}/><span>PR #{x.pr}</span><code>{short(x.sha,8)}</code></div><p>{x.explanation}</p><small>{x.ci_state} · {when(x.at)}</small></article>)}</div></section>
-<aside className="lifecycle"><span className="kicker">LIFECYCLE</span><h2>Protocol state</h2><div className="rail"><div className="done"><i/>Wallet action</div><div className={stage==="submitted"||stage==="accepted"||stage==="finalized"?"done":""}><i/>Submitted</div><div className={stage==="accepted"||stage==="finalized"?"done":""}><i/>Accepted <small>provisional</small></div><div className={stage==="finalized"?"done":""}><i/>Finalized</div></div><TxPanel stage={stage} hash={hash} error={error}/>{hash&&<a className="textLink" target="_blank" rel="noreferrer" href={`${EXPLORER_URL}/tx/${hash}`}>Open transaction ↗</a>}<div className="authority"><b>Authority boundary</b><p>No requester override. No platform administrator. No browser-generated verdict.</p></div></aside></div>}
+"use client";
+
+import Link from "next/link";
+import {use,useCallback,useEffect,useState} from "react";
+import {useWallet,onStudionet} from "@/components/WalletProvider";
+import {api,write} from "@/lib/genlayer";
+import type {Agreement,Attempt,TxStage} from "@/lib/types";
+import {StatusPill} from "@/components/StatusPill";
+import {TxPanel} from "@/components/TxPanel";
+import {LifecycleRail} from "@/components/LifecycleRail";
+import {CopyCode} from "@/components/CopyCode";
+import {EmptyState} from "@/components/EmptyState";
+import {gen,short,when} from "@/lib/format";
+import {EXPLORER_URL} from "@/lib/constants";
+
+export default function Work({params}: {params: Promise<{id: string}>}) {
+  const {id} = use(params);
+  const wallet = useWallet();
+  const [agreement,setAgreement] = useState<Agreement | null>(null);
+  const [attempts,setAttempts] = useState<Attempt[]>([]);
+  const [claimable,setClaimable] = useState("0");
+  const [pr,setPr] = useState("");
+  const [stage,setStage] = useState<TxStage>("idle");
+  const [hash,setHash] = useState("");
+  const [error,setError] = useState("");
+  const load = useCallback(async () => {
+    try {
+      const current = await api.agreement(id);setAgreement(current);setAttempts(await api.attempts(id));if (wallet.address) setClaimable(await api.claimable(wallet.address));
+    } catch (caught) {setError(caught instanceof Error ? caught.message : String(caught));}
+  }, [id,wallet.address]);
+  useEffect(() => {void load()}, [load]);
+  const act = async (name: string,args: unknown[] = []) => {
+    try {
+      setError("");
+      if (!wallet.address || !wallet.provider) throw new Error("Connect your injected wallet first.");
+      if (!onStudionet(wallet.chainId)) throw new Error("Switch to Studionet 61999 first.");
+      setStage("wallet");
+      const out = await write(wallet.address as `0x${string}`,wallet.provider as never,name,args,0n,progress => {setHash(progress.hash);setStage(progress.status.includes("ACCEPT") ? "accepted" : "submitted")});
+      setHash(out.hash);setStage("finalized");await load();
+    } catch (caught) {setStage("failed");setError(caught instanceof Error ? caught.message : String(caught));}
+  };
+  if (!agreement && !error) return <div className="workspace-shell"><Link className="back-link" href="/">← Work desk</Link><div className="loading-card"><div className="skeleton large" /><div className="skeleton" /><div className="skeleton" /><div className="skeleton" /></div></div>;
+  if (!agreement) return <div className="workspace-shell"><Link className="back-link" href="/">← Work desk</Link><EmptyState eyebrow="AGREEMENT UNAVAILABLE" title={`Agreement #${id} could not be read.`} description={error} /></div>;
+  const me = wallet.address.toLowerCase();
+  const requester = me === agreement.requester.toLowerCase();
+  const developer = me === agreement.developer.toLowerCase();
+  const marker = `PATCHBOUND / agreement ${agreement.id} / developer ${agreement.developer}`;
+  return <div className="workspace-shell">
+    <div className="workspace-top"><div><Link className="back-link" href="/">← Work desk</Link><span className="eyebrow">AGREEMENT #{agreement.id}</span><h1>{agreement.repo}</h1><p>Immutable terms · Public GitHub evidence · GenLayer validator judgment</p></div><div className="workspace-top-meta"><StatusPill status={agreement.status} /><div className="workspace-stat"><span>REWARD</span><strong>{gen(agreement.reward)} GEN</strong></div><div className="workspace-stat"><span>ATTEMPTS</span><strong>{agreement.attempt_count}</strong></div></div></div>
+    <div className="workspace-grid">
+      <aside className="work-panel terms-panel"><span className="eyebrow">LOCKED TERMS</span><h2>Agreement overview</h2><dl className="terms-list"><div><dt>Requester</dt><dd>{short(agreement.requester,7)}</dd></div><div><dt>Developer</dt><dd>{short(agreement.developer,7)}</dd></div><div><dt>Reward</dt><dd>{gen(agreement.reward)} GEN</dd></div><div><dt>Offer deadline</dt><dd>{when(agreement.offer_deadline)}</dd></div><div><dt>Delivery deadline</dt><dd>{when(agreement.delivery_deadline)}</dd></div><div><dt>Public CI</dt><dd>{agreement.ci_required ? "Required" : "Not required"}</dd></div></dl><div className="criteria-heading"><h3>ACCEPTANCE CRITERIA</h3><span className="micro-label">{agreement.clauses.length} RULES</span></div><ol className="criteria-list">{agreement.clauses.map((clause,index) => <li key={index}><span>{String(index + 1).padStart(2,"0")}</span><div>{clause}</div></li>)}</ol>{agreement.issue > 0 && <a className="context-link" href={`https://github.com/${agreement.repo}/issues/${agreement.issue}`} target="_blank" rel="noreferrer">Context issue #{agreement.issue} ↗</a>}</aside>
+
+      <section className="work-panel action-panel"><div className="panel-heading"><div><span className="eyebrow">CURRENT ACTION</span><h2>{agreement.status === "OFFERED" ? "Terms awaiting acceptance" : agreement.status === "ACTIVE" ? "Ready for delivery" : agreement.status === "PAYABLE" ? "Settlement is payable" : "Agreement is closed"}</h2></div><span className="micro-label">{requester ? "REQUESTER VIEW" : developer ? "DEVELOPER VIEW" : "OBSERVER VIEW"}</span></div>
+        {agreement.status === "OFFERED" && <div className="action-box"><span className="micro-label">OFFERED / IMMUTABLE ON ACCEPTANCE</span><h2>Review the rules before accepting.</h2><p>Accepting locks the agreement lifecycle. After acceptance, the requester can no longer cancel the offer.</p>{developer && <button className="primary" type="button" onClick={() => act("accept_terms",[id])}>Accept immutable terms <span aria-hidden="true">→</span></button>}{requester && <button className="secondary" type="button" onClick={() => act("cancel_offer",[id])}>Cancel unaccepted offer</button>}</div>}
+        {agreement.status === "ACTIVE" && <div className="action-box"><span className="micro-label">ACTIVE / DELIVERY WINDOW OPEN</span><h2>Submit the public patch for evaluation.</h2><p>Put this agreement-scoped marker in the PR description. Validators fetch the repository themselves and bind the exact PR head commit.</p><CopyCode value={marker} /><div className="inline-form"><label className="sr-only" htmlFor="pr-number">Pull request number</label><input id="pr-number" value={pr} onChange={e => setPr(e.target.value)} inputMode="numeric" placeholder="PR number" /><button className="primary" type="button" onClick={() => act("evaluate_delivery",[id,Number(pr)])} disabled={!developer || !pr}>Evaluate patch <span aria-hidden="true">→</span></button></div><p className="hint">Outcomes remain recoverable while the agreement is active. A submitted PR/head SHA cannot be replayed.</p></div>}
+        {agreement.status === "PAYABLE" && <div className="result-box satisfied"><span className="micro-label">FINAL OUTCOME / SATISFIED</span><h2>Validators found the patch payable.</h2><p>{agreement.explanation}</p>{agreement.winning_sha && <div className="result-callout"><span>BOUND COMMIT · PR #{agreement.winning_pr}</span><code>{agreement.winning_sha}</code></div>}{developer && BigInt(claimable) > 0n && <button className="primary" type="button" onClick={() => act("claim_funds")}>Claim {gen(claimable)} GEN <span aria-hidden="true">→</span></button>}</div>}
+        {["PAID","CANCELLED","EXPIRED"].includes(agreement.status) && <div className="result-box"><span className="micro-label">TERMINAL STATE / {agreement.status}</span><h2>{agreement.status === "PAID" ? "Reward claimed." : agreement.status === "EXPIRED" ? "Agreement expired." : "Agreement cancelled."}</h2><p>{agreement.explanation || "This agreement has reached a closed state."}</p>{agreement.winning_sha && <div className="result-callout"><span>BOUND COMMIT · PR #{agreement.winning_pr}</span><code>{agreement.winning_sha}</code></div>}</div>}
+        <div className="attempts"><h3>EVALUATION HISTORY</h3>{attempts.length === 0 ? <p className="muted">No patch submitted yet. Evaluation history will appear here after the designated developer submits a pull request.</p> : attempts.map((attempt,index) => <article className="attempt-card" key={`${attempt.sha}-${index}`}><div className="attempt-top"><StatusPill status={attempt.outcome} /><span>PR #{attempt.pr}</span><code>{short(attempt.sha,8)}</code></div><p>{attempt.explanation}</p><small>{attempt.ci_state} · {when(attempt.at)}</small></article>)}</div>
+        <TxPanel stage={stage} hash={hash} error={stage === "failed" ? error : undefined} />
+      </section>
+
+      <aside className="work-panel lifecycle-panel"><span className="eyebrow">PROTOCOL STATE</span><h2>Lifecycle</h2><LifecycleRail agreement={agreement} txStage={stage} />{hash && <a className="context-link" href={`${EXPLORER_URL}/tx/${hash}`} target="_blank" rel="noreferrer">Open transaction ↗</a>}<div className="authority-note"><strong>AUTHORITY BOUNDARY</strong><p>No requester override. No platform administrator. No browser-generated verdict. Canonical state remains on GenLayer.</p></div></aside>
+    </div>
+  </div>;
+}
