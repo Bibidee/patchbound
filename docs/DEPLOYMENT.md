@@ -30,7 +30,7 @@ There is no public retry and no public confirmation method. GenLayer external tr
 - [x] `npm run preflight` — network check, release verification, typecheck, lint, 12 UI tests, 37 Direct Mode tests, and production build all passed.
 - [x] `npm audit --omit=dev --audit-level=high` — no production high/critical advisories after the dependency update.
 - [ ] Full dependency audit is not entirely zero: 5 moderate dev-only transitive findings remain in the GenLayer CLI/Vitest/Dockerode toolchain; forcing Vitest 4 would be a breaking change.
-- [x] Public CI for the hardened source passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36897533311) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36897537104).
+- [x] Public CI for the deployed frontend source passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36898963961) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36898967400).
 - [x] repository search finds no forbidden network configuration.
 - [x] no secrets or private keys are tracked.
 
