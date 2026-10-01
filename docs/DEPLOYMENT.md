@@ -8,7 +8,7 @@ This file records observed evidence only. Blank lifecycle fields are intentional
 - Contract source changed: yes.
 - Remediation contract deployment: finalized successfully on Studionet.
 - Remediation frontend deployment: production redeployed and ready.
-- Real lifecycle evidence: not executed; a developer wallet, funded accounts, and a public agreement-bound GitHub PR are required.
+- Real lifecycle evidence: partial live transactions observed; no successful payout or verified refund evidence is claimed yet.
 
 ## Local preflight
 
@@ -69,11 +69,11 @@ The following records belong to the prior deployed source revision and are retai
 - Vercel deployment: `dpl_Bq4xD6jcY8ReyHomuAgTq1bs3Kvu` (`READY`).
 - Deployment alias: `https://patchbound-5ut17p4nn-bibidees-projects.vercel.app`.
 
-## Real lifecycle A — satisfied and paid
+## Real lifecycle A — satisfied and paid (pending public PR)
 
-- Agreement ID:
-- Create transaction:
-- Accept transaction:
+- Agreement ID: `1`.
+- Create transaction: `0x8508020a947320b90f4cfcc4a5b3d42fa181f4d4b4366ab3b4b3a6eeb0d32370` (`FINALIZED`, majority agree).
+- Accept transaction: `0xa70188e2cfdaf672876731d7e769328984630ce7908f7cedf615493bb9a42f5d` (`FINALIZED`, majority agree).
 - Evaluate transaction:
 - Bound PR:
 - Bound head SHA:
@@ -81,17 +81,18 @@ The following records belong to the prior deployed source revision and are retai
 - Claim transaction:
 - Transfer child transaction:
 - Confirmation transaction:
-- Final agreement state:
+- Final agreement state: `ACTIVE`; evaluation and settlement remain pending a public agreement-bound PR.
 
 ## Real lifecycle B — alternate outcome and recovery
 
-- Agreement ID:
-- Transaction:
-- PR / SHA:
-- Outcome:
-- Reason:
-- Recovery action:
-- Recovery transaction:
+- Agreement ID: `2`.
+- Create transaction: `0x9e8ddc934f91d8beb5fde6ff3862681aa9447b6788d859a031496597a9fed354` (`FINALIZED`, majority agree).
+- Cancellation transaction: `0xe2c1aa3f9218ca3e9f34cf27fd277d70c9b8be80407fbf3be2ac8040257632f0` (`FINALIZED`, majority agree).
+- Refund claim transaction: `0xe7055c818ad49e684ab3dcb7e0db59ba639eb458d164edeb0eeb5a9cefbb8fab` (`FINALIZED`, majority agree).
+- Transfer child: `0xf9be4ff04e94f8ec78c4a3e07b1b33ba7f37ca787796fd1ef32dbaa67771b76a` (`FINALIZED`, `NO_MAJORITY`).
+- Confirmation transaction: `0x239ff49f52d6432b16279848d75844cd3a2c95c47ba09a802a91063461c9b8cc` (`FINALIZED`, majority agree).
+- Final on-chain state: `CANCELLED` / `REFUNDED`; this attempt is **not accepted as verified refund evidence** because the transfer child did not prove successful execution.
+- Recovery status: requires a fresh genuine agreement whose transfer child reaches a verified successful execution result before confirmation.
 
 ## Browser verification
 
