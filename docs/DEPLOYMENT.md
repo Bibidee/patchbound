@@ -45,7 +45,7 @@ The following records belong to the prior deployed source revision and are retai
 
 ## Remediation contract deployment
 
-- Source commit: pending final commit.
+- Source commit: `cd88e2654d8c7c55848cc0abdb2255cc9fb1e3ff`.
 - Source SHA-256: `3E95A6310194919588C12DA17FB47A44483A1A1846C942AEEFB86989312E57EF`.
 - Address: pending genuine Studionet deployment.
 - Deployment transaction: pending genuine Studionet deployment.
