@@ -66,9 +66,9 @@ The following records belong to the prior deployed source revision and are retai
 
 - Production URL: `https://patchbound.vercel.app`
 - Configured remediation contract: `0xb1651987F8854ad446E1F2A845b59d1c470234A7`.
-- Frontend repository commit: `13960c9`.
-- Vercel deployment: `dpl_EPAKM7jQmwDu9uiDtBozaxpqe4kU` (`READY`).
-- Deployment alias: `https://patchbound-84eak38he-bibidees-projects.vercel.app`.
+- Frontend repository commit: `b39a209e9578afb03903f9844dcc91beeeb7fcbb`.
+- Vercel deployment: `dpl_AoGFiju9njxMQFHJAzZ3Ae2ug9rg` (`READY`).
+- Deployment alias: `https://patchbound-ikyzaa9qs-bibidees-projects.vercel.app`.
 
 ## Real lifecycle A — satisfied and paid
 
