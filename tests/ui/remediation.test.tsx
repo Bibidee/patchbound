@@ -47,7 +47,9 @@ const installProvider = (initialAccounts = ["0xabcdef1234567890abcdef1234567890a
 describe("GenLayer execution semantics", () => {
   it("requires FINISHED_WITH_RETURN for success", () => {
     expect(executionSucceeded({txExecutionResultName: ExecutionResult.FINISHED_WITH_RETURN})).toBe(true);
+    expect(executionSucceeded({execution_result: "SUCCESS"})).toBe(true);
     expect(executionSucceeded({txExecutionResultName: ExecutionResult.FINISHED_WITH_ERROR})).toBe(false);
+    expect(executionFailed({consensus_data:{leader_receipt:[{execution_result:"ERROR"}]}})).toBe(true);
     expect(executionFailed({txExecutionResultName: ExecutionResult.FINISHED_WITH_ERROR})).toBe(true);
   });
 

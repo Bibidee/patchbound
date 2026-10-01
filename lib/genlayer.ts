@@ -44,7 +44,12 @@ export type WriteProgress = {
 
 type Receipt = {
   statusName?: string;
+  status_name?: string;
   txExecutionResultName?: string;
+  tx_execution_result_name?: string;
+  execution_result?: string;
+  result_name?: string;
+  consensus_data?: {leader_receipt?: Array<{execution_result?: string}>};
   value_credited?: boolean;
 };
 
@@ -62,12 +67,23 @@ export class ExecutionFailedError extends Error {
   }
 }
 
+function receiptStatus(receipt: Receipt) {
+  return String(receipt.statusName || receipt.status_name || "").toUpperCase();
+}
+
+function receiptExecution(receipt: Receipt) {
+  const direct = receipt.txExecutionResultName || receipt.tx_execution_result_name || receipt.execution_result;
+  if (direct) return String(direct).toUpperCase();
+  const leader = receipt.consensus_data?.leader_receipt?.find(item => item.execution_result);
+  return String(leader?.execution_result || "").toUpperCase();
+}
+
 export function executionSucceeded(receipt: Receipt) {
-  return receipt.txExecutionResultName === ExecutionResult.FINISHED_WITH_RETURN;
+  return [ExecutionResult.FINISHED_WITH_RETURN, "SUCCESS"].includes(receiptExecution(receipt) as ExecutionResult | "SUCCESS");
 }
 
 export function executionFailed(receipt: Receipt) {
-  return receipt.txExecutionResultName === ExecutionResult.FINISHED_WITH_ERROR;
+  return [ExecutionResult.FINISHED_WITH_ERROR, "ERROR"].includes(receiptExecution(receipt) as ExecutionResult | "ERROR");
 }
 
 export function transferSucceeded(receipt: Receipt) {
@@ -76,15 +92,18 @@ export function transferSucceeded(receipt: Receipt) {
 
 function finalOutcome(hash: string, receipt: Receipt, onProgress?: (progress: WriteProgress) => void) {
   if (executionFailed(receipt)) {
-    onProgress?.({hash, status: "FAILED", execution: receipt.txExecutionResultName, error: "GenVM execution failed."});
-    throw new ExecutionFailedError(hash, receipt.txExecutionResultName || "FINISHED_WITH_ERROR", "The transaction finalized with a contract execution error.");
+    const execution = receiptExecution(receipt);
+    onProgress?.({hash, status: "FAILED", execution, error: "GenVM execution failed."});
+    throw new ExecutionFailedError(hash, execution || "FINISHED_WITH_ERROR", "The transaction finalized with a contract execution error.");
   }
   if (!executionSucceeded(receipt)) {
-    onProgress?.({hash, status: "UNKNOWN", execution: receipt.txExecutionResultName, error: "Finality was reached but execution success was not proven."});
-    throw new ExecutionFailedError(hash, receipt.txExecutionResultName || "NOT_VOTED", "Finality was reached but GenVM execution success was not proven.");
+    const execution = receiptExecution(receipt);
+    onProgress?.({hash, status: "UNKNOWN", execution, error: "Finality was reached but execution success was not proven."});
+    throw new ExecutionFailedError(hash, execution || "NOT_VOTED", "Finality was reached but GenVM execution success was not proven.");
   }
-  onProgress?.({hash, status: "FINALIZED", execution: receipt.txExecutionResultName});
-  return {hash, status: "FINALIZED" as const, execution: receipt.txExecutionResultName, explorer: `${EXPLORER_URL}/tx/${hash}`};
+  const execution = receiptExecution(receipt);
+  onProgress?.({hash, status: "FINALIZED", execution});
+  return {hash, status: "FINALIZED" as const, execution, explorer: `${EXPLORER_URL}/tx/${hash}`};
 }
 
 async function waitForFinalization(client: ReturnType<typeof createClient>, hash: string, onProgress?: (progress: WriteProgress) => void) {
@@ -100,11 +119,12 @@ async function waitForFinalization(client: ReturnType<typeof createClient>, hash
 
 export async function resumeTransaction(hash: string, onProgress?: (progress: WriteProgress) => void) {
   const tx = await readClient.getTransaction({hash: hash as never}) as unknown as Receipt;
-  const status = String(tx.statusName || "").toUpperCase();
+  const status = receiptStatus(tx);
   if (status === TransactionStatus.FINALIZED) return finalOutcome(hash, tx, onProgress);
   if (status === TransactionStatus.ACCEPTED) {
-    onProgress?.({hash, status: "ACCEPTED", execution: tx.txExecutionResultName});
-    if (executionFailed(tx)) throw new ExecutionFailedError(hash, tx.txExecutionResultName || "FINISHED_WITH_ERROR", "The transaction was accepted with a contract execution error.");
+    const execution = receiptExecution(tx);
+    onProgress?.({hash, status: "ACCEPTED", execution});
+    if (executionFailed(tx)) throw new ExecutionFailedError(hash, execution || "FINISHED_WITH_ERROR", "The transaction was accepted with a contract execution error.");
     return waitForFinalization(readClient, hash, onProgress);
   }
   if ([TransactionStatus.CANCELED, TransactionStatus.UNDETERMINED, TransactionStatus.VALIDATORS_TIMEOUT, TransactionStatus.LEADER_TIMEOUT].includes(status as TransactionStatus)) {
@@ -121,7 +141,7 @@ export async function waitForExistingTransaction(hash: string, onProgress?: (pro
       onProgress?.({hash, status: "FINALIZED", execution: "VALUE_CREDITED"});
       return {hash, status: "FINALIZED" as const, execution: "VALUE_CREDITED", explorer: `${EXPLORER_URL}/tx/${hash}`};
     }
-    if (receipt.txExecutionResultName) return finalOutcome(hash, receipt, onProgress);
+    if (receiptExecution(receipt)) return finalOutcome(hash, receipt, onProgress);
     throw new Error("The finalized transfer child did not prove recipient credit.");
   } catch (caught) {
     if (caught instanceof ExecutionFailedError) throw caught;
@@ -146,11 +166,12 @@ export async function write(address: `0x${string}`, provider: EIP1193Provider, n
     onProgress?.({hash, status: "TRACKING", error: caught instanceof Error ? caught.message : String(caught)});
     throw new SubmittedTransactionError(hash, "The transaction was submitted, but the accepted state is not confirmed yet.");
   }
-  if (String(accepted.statusName || "").toUpperCase() === TransactionStatus.ACCEPTED) {
-    onProgress?.({hash, status: "ACCEPTED", execution: accepted.txExecutionResultName});
-    if (executionFailed(accepted)) throw new ExecutionFailedError(hash, accepted.txExecutionResultName || "FINISHED_WITH_ERROR", "The transaction was accepted with a contract execution error.");
+  if (receiptStatus(accepted) === TransactionStatus.ACCEPTED) {
+    const execution = receiptExecution(accepted);
+    onProgress?.({hash, status: "ACCEPTED", execution});
+    if (executionFailed(accepted)) throw new ExecutionFailedError(hash, execution || "FINISHED_WITH_ERROR", "The transaction was accepted with a contract execution error.");
   } else {
-    onProgress?.({hash, status: "UNKNOWN", execution: accepted.txExecutionResultName, error: `GenLayer status is ${accepted.statusName || "unknown"}.`});
+    onProgress?.({hash, status: "UNKNOWN", execution: receiptExecution(accepted), error: `GenLayer status is ${receiptStatus(accepted) || "unknown"}.`});
   }
   return waitForFinalization(client, hash, onProgress);
 }
