@@ -39,7 +39,7 @@ Run CLI commands through the local package, e.g. `npm run cli -- --version` or `
 5. Validators construct GitHub API URLs themselves. They verify repository identity, marker, exact head SHA, bounded changed-file evidence and public combined commit status when CI is required.
 6. Validators independently judge the clauses. Free-form explanations are not consensus-critical; outcome, SHA and CI state are independently reproduced.
 7. `NOT_SATISFIED` and `INCONCLUSIVE` remain recoverable while the agreement is active. The same PR/head SHA cannot be replayed.
-8. `SATISFIED` changes the agreement to `PAYABLE`. The developer claims the reward. The parent claim reserves an agreement-specific entitlement, the external transfer child is checked separately, and the recipient confirms completion before the agreement becomes `PAID`.
+8. `SATISFIED` changes the agreement to `PAYABLE`. The developer dispatches the reward exactly once. The contract consumes that agreement-specific entitlement before emitting one finalized external transfer and records `PAYOUT_DISPATCHED`; the child receipt is external evidence and cannot be confirmed or retried through the contract.
 9. Unaccepted or undelivered agreements can expire to requester refund entitlement.
 
 ## Evidence boundaries
@@ -86,7 +86,7 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-The suite covers funded creation, role authorization, post-acceptance cancellation protection, refunds, malformed inputs, satisfactory adjudication, missing submission marker, unavailable evidence, uncertainty and exact-commit replay protection.
+The suite covers funded creation, role authorization, post-acceptance cancellation protection, refunds, malformed inputs, satisfactory adjudication, missing submission marker, unavailable evidence, uncertainty, exact-commit replay protection, settlement isolation and hostile payout attempts. The current Direct Mode run has 36 passing tests.
 
 ## Deployment
 
@@ -102,5 +102,5 @@ The current production contract address is configured through `NEXT_PUBLIC_PATCH
 - GitHub combined commit status is supporting evidence, not proof that validators reproduced the build.
 - GitHub availability and unauthenticated API rate limits can cause `INCONCLUSIVE` outcomes.
 - The PR marker is agreement-scoped submission control, not a permanent cryptographic GitHub identity.
-- External transfer children are asynchronous. A recipient must confirm a verified child success; otherwise the agreement remains payout/refund pending and can be retried by the recipient.
+- External transfer children are asynchronous. The contract cannot inspect the later child receipt and therefore emits at most one transfer per agreement entitlement, records `PAYOUT_DISPATCHED` or `REFUND_DISPATCHED`, and does not offer a retry or user-confirmation method. A child failure is not automatically refunded by GenLayer.
 - No private repositories, generic freelance marketplace, reputation system, governance or token layer.

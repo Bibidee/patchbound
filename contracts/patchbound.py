@@ -40,7 +40,8 @@ class Agreement:
     attempt_count: u32
     created_at: u64
     closed_at: u64
-    refund_claimed: bool
+    refund_dispatched: bool
+    dispatched_amount: u256
     settlement_state: str
 
 @allow_storage
@@ -111,7 +112,8 @@ class Patchbound(gl.Contract):
             issue=issue, clauses=stored, ci_required=ci_required, reward=reward,
             offer_deadline=offer_deadline, delivery_deadline=delivery_deadline, status="OFFERED",
             accepted_at=u64(0), winning_pr=u32(0), winning_sha="", outcome="", explanation="",
-            attempt_count=u32(0), created_at=u64(now), closed_at=u64(0), refund_claimed=False,
+            attempt_count=u32(0), created_at=u64(now), closed_at=u64(0), refund_dispatched=False,
+            dispatched_amount=u256(0),
             settlement_state="NONE",
         )
         req_ids = self.wallet_ids.get(gl.message.sender_address, [])
@@ -308,61 +310,31 @@ class Patchbound(gl.Contract):
         amount = self.entitlements.get(agreement_id, u256(0))
         if amount == u256(0):
             raise gl.vm.UserError("No funds from this agreement are claimable by this wallet")
-        if a.status == "PAYABLE" and sender == a.developer and a.settlement_state == "PAYABLE":
-            a.settlement_state = "PAYOUT_PENDING"
-        elif a.status in ("CANCELLED", "EXPIRED") and sender == a.requester and a.settlement_state == "REFUNDABLE" and not a.refund_claimed:
-            a.settlement_state = "REFUND_PENDING"
+        is_payout = a.status == "PAYABLE" and sender == a.developer and a.settlement_state == "PAYABLE"
+        is_refund = a.status in ("CANCELLED", "EXPIRED") and sender == a.requester and a.settlement_state == "REFUNDABLE" and not a.refund_dispatched
+        if is_payout:
+            a.settlement_state = "PAYOUT_DISPATCHED"
+        elif is_refund:
+            a.settlement_state = "REFUND_DISPATCHED"
+            a.refund_dispatched = True
         else:
             raise gl.vm.UserError("No funds from this agreement are claimable by this wallet")
         available = self.claimable.get(sender, u256(0))
         if available < amount:
             raise gl.vm.UserError("Claimable accounting mismatch")
-        # External transfers are asynchronous child transactions. Keep the
-        # agreement entitlement and aggregate accounting reserved until the
-        # recipient confirms the successful child transaction.
+        # External messages are asynchronous and the contract cannot inspect
+        # their later child receipt. Consume the agreement entitlement before
+        # emitting exactly one finalized transfer; there is deliberately no
+        # contract retry or user confirmation path.
+        self.claimable[sender] = available - amount
+        self.entitlements[agreement_id] = u256(0)
+        a.dispatched_amount = amount
+        a.closed_at = u64(self._now())
         _Recipient(sender).emit_transfer(value=amount, on="finalized")
         return str(amount)
 
-    @gl.public.write
-    def confirm_transfer(self, agreement_id: str) -> str:
-        a = self._get(agreement_id)
-        sender = gl.message.sender_address
-        amount = self.entitlements.get(agreement_id, u256(0))
-        if amount == u256(0):
-            raise gl.vm.UserError("No pending transfer exists for this agreement")
-        if a.settlement_state == "PAYOUT_PENDING" and sender == a.developer:
-            a.settlement_state = "PAID"
-            a.status = "PAID"
-            a.closed_at = u64(self._now())
-        elif a.settlement_state == "REFUND_PENDING" and sender == a.requester:
-            a.settlement_state = "REFUNDED"
-            a.refund_claimed = True
-        else:
-            raise gl.vm.UserError("No pending transfer can be confirmed by this wallet")
-        available = self.claimable.get(sender, u256(0))
-        if available < amount:
-            raise gl.vm.UserError("Claimable accounting mismatch")
-        self.claimable[sender] = available - amount
-        self.entitlements[agreement_id] = u256(0)
-        return str(amount)
-
-    @gl.public.write
-    def retry_pending_transfer(self, agreement_id: str) -> str:
-        a = self._get(agreement_id)
-        sender = gl.message.sender_address
-        amount = self.entitlements.get(agreement_id, u256(0))
-        if amount == u256(0) or a.settlement_state not in ("PAYOUT_PENDING", "REFUND_PENDING"):
-            raise gl.vm.UserError("No pending transfer exists for this agreement")
-        if sender != a.developer and sender != a.requester:
-            raise gl.vm.UserError("Only an agreement participant can retry a pending transfer")
-        recipient = a.developer if a.settlement_state == "PAYOUT_PENDING" else a.requester
-        if sender != recipient:
-            raise gl.vm.UserError("Only the transfer recipient can retry a pending transfer")
-        _Recipient(recipient).emit_transfer(value=amount, on="finalized")
-        return str(amount)
-
     def _view(self, a: Agreement) -> dict:
-        return {"id":str(a.id),"requester":a.requester.as_hex,"developer":a.developer.as_hex,"repo":a.repo,"issue":int(a.issue),"clauses":[str(x) for x in a.clauses],"ci_required":a.ci_required,"reward":str(a.reward),"offer_deadline":int(a.offer_deadline),"delivery_deadline":int(a.delivery_deadline),"status":a.status,"accepted_at":int(a.accepted_at),"winning_pr":int(a.winning_pr),"winning_sha":a.winning_sha,"outcome":a.outcome,"explanation":a.explanation,"attempt_count":int(a.attempt_count),"created_at":int(a.created_at),"closed_at":int(a.closed_at),"refund_claimed":a.refund_claimed,"settlement_state":a.settlement_state}
+        return {"id":str(a.id),"requester":a.requester.as_hex,"developer":a.developer.as_hex,"repo":a.repo,"issue":int(a.issue),"clauses":[str(x) for x in a.clauses],"ci_required":a.ci_required,"reward":str(a.reward),"offer_deadline":int(a.offer_deadline),"delivery_deadline":int(a.delivery_deadline),"status":a.status,"accepted_at":int(a.accepted_at),"winning_pr":int(a.winning_pr),"winning_sha":a.winning_sha,"outcome":a.outcome,"explanation":a.explanation,"attempt_count":int(a.attempt_count),"created_at":int(a.created_at),"closed_at":int(a.closed_at),"refund_dispatched":a.refund_dispatched,"dispatched_amount":str(a.dispatched_amount),"settlement_state":a.settlement_state}
 
     @gl.public.view
     def get_agreement(self, agreement_id: str) -> dict:

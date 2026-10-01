@@ -113,25 +113,23 @@ def test_exact_sha_replay_rejected(direct_vm, env):
     with direct_vm.expect_revert("already evaluated"):
         c.evaluate_delivery(aid, 9)
 
-def test_claim_requires_agreement_entitlement_and_confirmation(direct_vm, env):
+def test_claim_consumes_refund_entitlement_and_dispatches_once(direct_vm, env):
     c, requester, _, _, aid = env
     direct_vm.sender = requester
     c.cancel_offer(aid)
     assert c.get_agreement(aid)["settlement_state"] == "REFUNDABLE"
     c.claim_funds(aid)
-    pending = c.get_agreement(aid)
-    assert pending["settlement_state"] == "REFUND_PENDING"
-    assert pending["refund_claimed"] is False
-    assert c.get_claimable(address_hex(requester)) == str(GEN)
-    c.confirm_transfer(aid)
-    settled = c.get_agreement(aid)
-    assert settled["settlement_state"] == "REFUNDED"
-    assert settled["refund_claimed"] is True
+    dispatched = c.get_agreement(aid)
+    assert dispatched["settlement_state"] == "REFUND_DISPATCHED"
+    assert dispatched["refund_dispatched"] is True
+    assert dispatched["dispatched_amount"] == str(GEN)
     assert c.get_claimable(address_hex(requester)) == "0"
     with direct_vm.expect_revert("No funds"):
         c.claim_funds(aid)
+    assert not hasattr(c, "confirm_transfer")
+    assert not hasattr(c, "retry_pending_transfer")
 
-def test_satisfied_claim_is_pending_until_recipient_confirmation(direct_vm, env):
+def test_satisfied_claim_consumes_entitlement_and_dispatches_once(direct_vm, env):
     c, _, developer, _, aid = env
     direct_vm.sender = developer
     c.accept_terms(aid)
@@ -141,12 +139,11 @@ def test_satisfied_claim_is_pending_until_recipient_confirmation(direct_vm, env)
     c.evaluate_delivery(aid, 9)
     c.claim_funds(aid)
     assert c.get_agreement(aid)["status"] == "PAYABLE"
-    assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_PENDING"
-    assert c.get_claimable(address_hex(developer)) == str(GEN)
-    c.confirm_transfer(aid)
-    assert c.get_agreement(aid)["status"] == "PAID"
-    assert c.get_agreement(aid)["settlement_state"] == "PAID"
+    assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_DISPATCHED"
+    assert c.get_agreement(aid)["dispatched_amount"] == str(GEN)
     assert c.get_claimable(address_hex(developer)) == "0"
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
 
 def test_claim_cannot_cross_agreement_entitlement(direct_vm, direct_deploy):
     c = direct_deploy(CONTRACT)
@@ -163,7 +160,7 @@ def test_claim_cannot_cross_agreement_entitlement(direct_vm, direct_deploy):
         c.claim_funds(second)
     direct_vm.sender = requester
     c.claim_funds(first)
-    assert c.get_agreement(first)["settlement_state"] == "REFUND_PENDING"
+    assert c.get_agreement(first)["settlement_state"] == "REFUND_DISPATCHED"
 
 def test_malicious_leader_outcome_sha_ci_and_digest_are_rejected(direct_vm, env):
     c, _, developer, _, aid = env
@@ -257,7 +254,7 @@ def test_only_requester_can_cancel_and_expiry_is_permissionless_refundable(direc
     assert expired["settlement_state"] == "REFUNDABLE"
     direct_vm.sender = requester
     c.claim_funds(aid)
-    assert c.get_agreement(aid)["settlement_state"] == "REFUND_PENDING"
+    assert c.get_agreement(aid)["settlement_state"] == "REFUND_DISPATCHED"
 
 def test_active_agreement_expires_only_after_delivery_deadline(direct_vm, env):
     c, requester, developer, outsider, aid = env
@@ -274,7 +271,7 @@ def test_active_agreement_expires_only_after_delivery_deadline(direct_vm, env):
         c.claim_funds(aid)
     direct_vm.sender = requester
     c.claim_funds(aid)
-    assert c.get_agreement(aid)["settlement_state"] == "REFUND_PENDING"
+    assert c.get_agreement(aid)["settlement_state"] == "REFUND_DISPATCHED"
 
 def test_evaluation_role_positive_pr_and_delivery_deadline_are_enforced(direct_vm, env):
     c, _, developer, outsider, aid = env
@@ -310,7 +307,7 @@ def test_oversized_diff_is_inconclusive(direct_vm, env):
     assert out["outcome"] == "INCONCLUSIVE"
     assert "PATCH_TOO_LARGE" in out["explanation"]
 
-def test_pending_transfer_retry_and_confirmation_are_recipient_only(direct_vm, env):
+def test_settlement_has_no_retry_or_confirmation_authority(direct_vm, env):
     c, _, developer, outsider, aid = env
     direct_vm.sender = developer
     c.accept_terms(aid)
@@ -319,16 +316,11 @@ def test_pending_transfer_retry_and_confirmation_are_recipient_only(direct_vm, e
     direct_vm.mock_llm(r"independently adjudicating", json.dumps({"outcome":"SATISFIED","explanation":"Bound requirements are met."}))
     c.evaluate_delivery(aid, 9)
     c.claim_funds(aid)
+    assert not hasattr(c, "retry_pending_transfer")
+    assert not hasattr(c, "confirm_transfer")
     direct_vm.sender = outsider
-    with direct_vm.expect_revert("Only an agreement participant"):
-        c.retry_pending_transfer(aid)
-    with direct_vm.expect_revert("confirmed by this wallet"):
-        c.confirm_transfer(aid)
-    direct_vm.sender = developer
-    c.retry_pending_transfer(aid)
-    c.confirm_transfer(aid)
-    with direct_vm.expect_revert("No pending transfer"):
-        c.confirm_transfer(aid)
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
 
 def test_two_refunds_keep_agreement_entitlements_separate(direct_vm, direct_deploy):
     c = direct_deploy(CONTRACT)
@@ -340,10 +332,128 @@ def test_two_refunds_keep_agreement_entitlements_separate(direct_vm, direct_depl
     second = c.open_agreement(address_hex(developer), "acme/widget", 2, ["The second agreement has a bounded requirement."], False, 1893628800, 1894665600)
     c.cancel_offer(first)
     c.cancel_offer(second)
+    assert c.get_claimable(address_hex(requester)) == str(2 * GEN)
     c.claim_funds(first)
     c.claim_funds(second)
-    assert c.get_claimable(address_hex(requester)) == str(2 * GEN)
-    c.confirm_transfer(first)
-    assert c.get_claimable(address_hex(requester)) == str(GEN)
-    c.confirm_transfer(second)
+    assert c.get_agreement(first)["settlement_state"] == "REFUND_DISPATCHED"
+    assert c.get_agreement(second)["settlement_state"] == "REFUND_DISPATCHED"
     assert c.get_claimable(address_hex(requester)) == "0"
+
+def _make_satisfied(direct_vm, c, requester, developer, issue, sha):
+    direct_vm.sender = requester
+    direct_vm.value = GEN
+    aid = c.open_agreement(address_hex(developer), "acme/widget", issue, ["The bounded payout requirement is satisfied."], False, 1893628800, 1894665600)
+    direct_vm.value = 0
+    direct_vm.sender = developer
+    c.accept_terms(aid)
+    marker = f"PATCHBOUND / agreement {aid} / developer {address_hex(developer)}"
+    mock_pr(direct_vm, marker, sha=sha, ci_state="success")
+    direct_vm.mock_llm(r"independently adjudicating", json.dumps({"outcome":"SATISFIED","explanation":"The bounded requirement is satisfied."}))
+    c.evaluate_delivery(aid, 9)
+    assert direct_vm.run_validator() is True
+    assert c.get_agreement(aid)["status"] == "PAYABLE"
+    return aid
+
+def test_double_claim_is_rejected_after_single_dispatch(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 11, "1" * 40)
+    c.claim_funds(aid)
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
+    assert c.get_agreement(aid)["dispatched_amount"] == str(GEN)
+
+def test_repeated_retry_attack_is_unavailable_by_design(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 12, "2" * 40)
+    c.claim_funds(aid)
+    assert not hasattr(c, "retry_pending_transfer")
+    assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_DISPATCHED"
+
+def test_immediate_confirmation_attack_is_unavailable_by_design(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 13, "3" * 40)
+    c.claim_funds(aid)
+    assert not hasattr(c, "confirm_transfer")
+    assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_DISPATCHED"
+
+def test_frontend_bypass_cannot_reopen_dispatched_entitlement(direct_vm, env):
+    c, requester, developer, outsider, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 14, "4" * 40)
+    direct_vm.sender = developer
+    c.claim_funds(aid)
+    direct_vm.sender = outsider
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
+    direct_vm.sender = developer
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
+
+def test_multi_agreement_payouts_each_remain_reward_capped(direct_vm, direct_deploy):
+    c = direct_deploy(CONTRACT)
+    requester, developer = create_address("multi-requester"), create_address("multi-developer")
+    first = _make_satisfied(direct_vm, c, requester, developer, 21, "5" * 40)
+    direct_vm.sender = requester
+    direct_vm.value = 2 * GEN
+    second = c.open_agreement(address_hex(developer), "acme/widget", 22, ["The second agreement remains separately funded."], False, 1893628800, 1894665600)
+    direct_vm.value = 0
+    assert c.get_claimable(address_hex(developer)) == str(GEN)
+    direct_vm.sender = developer
+    c.claim_funds(first)
+    assert c.get_agreement(first)["dispatched_amount"] == str(GEN)
+    assert c.get_agreement(second)["dispatched_amount"] == "0"
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(second)
+    assert c.get_claimable(address_hex(developer)) == "0"
+
+def test_cross_role_payout_and_refund_are_rejected(direct_vm, env):
+    c, requester, developer, outsider, aid = env
+    direct_vm.sender = developer
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
+    direct_vm.sender = requester
+    c.cancel_offer(aid)
+    direct_vm.sender = developer
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
+    direct_vm.sender = outsider
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
+
+def test_unknown_child_has_no_retry_authority(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 31, "7" * 40)
+    c.claim_funds(aid)
+    assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_DISPATCHED"
+    assert not hasattr(c, "retry_pending_transfer")
+
+def test_timeout_cannot_authorize_second_emission(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 32, "8" * 40)
+    c.claim_funds(aid)
+    with direct_vm.expect_revert("No funds"):
+        c.claim_funds(aid)
+    assert c.get_agreement(aid)["dispatched_amount"] == str(GEN)
+
+def test_failed_child_has_no_contract_retry_path(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 33, "9" * 40)
+    c.claim_funds(aid)
+    assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_DISPATCHED"
+    assert not hasattr(c, "retry_pending_transfer")
+
+def test_direct_confirmation_cannot_fabricate_success(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 34, "a" * 40)
+    assert not hasattr(c, "confirm_transfer")
+    assert c.get_agreement(aid)["settlement_state"] == "PAYABLE"
+
+def test_conservation_after_dispatch_is_bounded_by_reward(direct_vm, env):
+    c, requester, developer, _, aid = env
+    aid = _make_satisfied(direct_vm, c, requester, developer, 35, "b" * 40)
+    before = c.get_agreement(aid)
+    assert before["dispatched_amount"] == "0"
+    c.claim_funds(aid)
+    after = c.get_agreement(aid)
+    assert int(after["dispatched_amount"]) <= int(after["reward"])
+    assert c.get_claimable(address_hex(developer)) == "0"
+    assert c.get_agreement(aid)["settlement_state"] == "PAYOUT_DISPATCHED"

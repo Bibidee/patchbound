@@ -12,7 +12,7 @@ const agreement = (overrides: Partial<Agreement> = {}): Agreement => ({
   clauses: ["A bounded requirement exists."], ci_required: false, reward: "5000000000000000000",
   offer_deadline: 2000, delivery_deadline: 3000, status: "ACTIVE", accepted_at: 1500,
   winning_pr: 0, winning_sha: "", outcome: "", explanation: "", attempt_count: 0,
-  created_at: 1000, closed_at: 0, refund_claimed: false, settlement_state: "NONE", ...overrides,
+  created_at: 1000, closed_at: 0, refund_dispatched: false, dispatched_amount: "0", settlement_state: "NONE", ...overrides,
 });
 
 afterEach(() => cleanup());
@@ -61,6 +61,19 @@ describe("durable lifecycle rendering", () => {
   it("keeps payable settlement separate from accepted transaction language", () => {
     render(<LifecycleRail agreement={agreement({status:"PAYABLE", accepted_at:1500, attempt_count:1, outcome:"SATISFIED", settlement_state:"PAYABLE"})} txStage="finalized" />);
     expect(screen.getByText("Settlement payable")).toBeTruthy();
-    expect(screen.getByText("Satisfied outcome is payable or paid")).toBeTruthy();
+    expect(screen.getByText("Satisfied outcome is payable")).toBeTruthy();
+  });
+
+  it("labels a payout dispatch without claiming recipient credit", () => {
+    render(<LifecycleRail agreement={agreement({status:"PAYABLE", accepted_at:1500, attempt_count:1, outcome:"SATISFIED", settlement_state:"PAYOUT_DISPATCHED", dispatched_amount:"5000000000000000000"})} txStage="finalized" />);
+    expect(screen.getByText("Payout dispatched")).toBeTruthy();
+    expect(screen.getByText("One external transfer was dispatched")).toBeTruthy();
+    expect(screen.queryByText("PAID")).toBeNull();
+  });
+
+  it("labels a refund dispatch without claiming recipient credit", () => {
+    render(<LifecycleRail agreement={agreement({status:"EXPIRED", accepted_at:1500, closed_at:1800, settlement_state:"REFUND_DISPATCHED", refund_dispatched:true, dispatched_amount:"5000000000000000000"})} txStage="finalized" />);
+    expect(screen.getByText("Refund dispatched")).toBeTruthy();
+    expect(screen.getByText("REFUND_DISPATCHED")).toBeTruthy();
   });
 });

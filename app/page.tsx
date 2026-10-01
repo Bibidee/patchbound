@@ -24,7 +24,7 @@ export default function Home() {
     api.forWallet(wallet.address).then(setAgreements).catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)));
   }, [wallet.address]);
   const visible = useMemo(() => agreements.filter(item => {
-    const filterMatch = filter === "ALL" || (filter === "CLOSED" ? ["PAID","CANCELLED","EXPIRED"].includes(item.status) : item.status === filter);
+    const filterMatch = filter === "ALL" || (filter === "CLOSED" ? ["PAYOUT_DISPATCHED","REFUND_DISPATCHED"].includes(item.settlement_state) || ["CANCELLED","EXPIRED"].includes(item.status) : item.status === filter);
     return filterMatch && item.repo.toLowerCase().includes(search.toLowerCase().trim());
   }), [agreements,filter,search]);
 

@@ -20,8 +20,15 @@ Repository code, patches, filenames, commit messages, issue text and pull-reques
 - the PR head and base are rechecked after file collection so a moving PR becomes `INCONCLUSIVE`;
 - terminal states cannot re-enter the active lifecycle;
 - withdrawal checks agreement-specific entitlement before emitting value;
-- claim accounting remains reserved until the recipient confirms the asynchronous transfer child.
+- claim accounting is debited and the agreement entitlement is consumed before the single external transfer is emitted;
+- `PAYOUT_DISPATCHED` and `REFUND_DISPATCHED` are honest dispatch states, not claims that the recipient's later child receipt was proven by the contract;
+- there is no public retry or confirmation method, because the contract cannot independently prove that an asynchronous child failed or credited its recipient;
+- aggregate `claimable` is derived from undispatched agreement entitlements and cannot authorize a second emission for an already dispatched agreement.
 
 ## External evidence
 
 GitHub is an external authority and can be unavailable, rate-limited or inconsistent. The safe response is `INCONCLUSIVE` when reliable evidence cannot be obtained. Consensus compares outcome, head/base SHA, CI state and evidence digest; the free-form explanation is informational and not consensus-critical. Consensus decentralizes interpretation of the evidence; it does not decentralize GitHub itself.
+
+## Settlement architecture
+
+The historical settlement revision allowed a pending entitlement to emit another external transfer through retry and allowed a recipient assertion to mark the agreement settled. The remediation uses single-emission settlement: `claim_funds(agreement_id)` is the only value-emitting settlement method, it is agreement-specific and one-shot, and it records dispatch before emitting `on="finalized"`. The contract has no `confirm_transfer` or `retry_pending_transfer` entry point. GenLayer's external child receipt remains observable to clients through triggered transaction IDs, but it is not an authority boundary for contract accounting.
