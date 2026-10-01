@@ -5,6 +5,10 @@ on:
     branches: [main, master]
   pull_request:
 
+permissions:
+  contents: read
+  statuses: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -40,3 +44,22 @@ jobs:
           fi
       - run: pytest -q
       - run: npm run build
+      - name: Publish combined commit status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          JOB_STATUS: ${{ job.status }}
+          STATUS_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ "$JOB_STATUS" = "success" ]; then
+            state="success"
+            description="Patchbound CI passed"
+          else
+            state="failure"
+            description="Patchbound CI failed"
+          fi
+          gh api --method POST "repos/$GITHUB_REPOSITORY/statuses/$STATUS_SHA" \
+            -f state="$state" \
+            -f target_url="https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            -f description="$description" \
+            -f context="Patchbound CI / combined status"
