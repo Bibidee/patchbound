@@ -1,14 +1,14 @@
 # Deployment and live evidence
 
-This file records observed evidence only. Blank lifecycle fields are intentional; no transaction hash, PR, commit, or browser result is invented.
+This file records observed evidence only. Every lifecycle hash, PR, commit, and browser result below was observed during verification; no value is invented.
 
 ## Remediation status
 
-- Status: `READY FOR LIVE LIFECYCLE EVIDENCE`.
+- Status: `READY FOR RE-AUDIT`.
 - Contract source changed: yes.
 - Remediation contract deployment: finalized successfully on Studionet.
 - Remediation frontend deployment: production redeployed and ready.
-- Real lifecycle evidence: refund path verified; successful payout remains pending the public PR-bound success path.
+- Real lifecycle evidence: agreement 3 success and agreement 1 expiry/refund paths verified on Studionet.
 
 ## Local preflight
 
@@ -16,10 +16,10 @@ This file records observed evidence only. Blank lifecycle fields are intentional
 - [x] `npm run cli -- --version` — GenLayer CLI `0.39.1`.
 - [x] `npm run typecheck`.
 - [x] `npm run lint` — clean after excluding generated caches.
-- [x] `npm run test` — 7 UI tests passed.
+- [x] `npm run test` — 8 UI tests passed.
 - [x] `npm run direct:test` — 25 Python Direct Mode tests passed with Python 3.13.16.
 - [x] `npm run build` — production build completed successfully.
-- [x] `npm run preflight` — network check, typecheck, lint, 7 UI tests, 25 Direct Mode tests, and production build all passed.
+- [x] `npm run preflight` — network check, typecheck, lint, 8 UI tests, 25 Direct Mode tests, and production build all passed.
 - [x] `npm audit --omit=dev --audit-level=high` — no production high/critical advisories after the dependency update.
 - [ ] Full dependency audit is not entirely zero: 5 moderate dev-only transitive findings remain in the GenLayer CLI/Vitest/Dockerode toolchain; forcing Vitest 4 would be a breaking change.
 - [x] Public CI for the remediation source passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36860207639) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36860208351).
@@ -70,19 +70,23 @@ The following records belong to the prior deployed source revision and are retai
 - Vercel deployment: `dpl_EPAKM7jQmwDu9uiDtBozaxpqe4kU` (`READY`).
 - Deployment alias: `https://patchbound-84eak38he-bibidees-projects.vercel.app`.
 
-## Real lifecycle A — satisfied and paid (pending public PR)
+## Real lifecycle A — satisfied and paid
 
 - Agreement ID: `3`.
 - Create transaction: `0x5539b2f4cc3dca6610bc9a02157a67579810fc3f4b049e95fa01964de838f7e6` (`FINALIZED`, majority agree).
 - Accept transaction: `0x88492f2c5ff289e49e59d0a35b907ccccee72a74b42d95c27249258a821bc826` (`FINALIZED`, majority agree).
-- Evaluate transaction:
-- Bound PR:
-- Bound head SHA:
-- Final outcome:
-- Claim transaction:
-- Transfer child transaction:
-- Confirmation transaction:
-- Final agreement state: `ACTIVE`; evaluation and settlement remain pending a public agreement-bound PR.
+- First evaluate transaction: `0x31dbc7bdcb16594ea1fc673748c95a2791d7fa13c845514322162aef5dd11c1d` (`FINALIZED`, `INCONCLUSIVE`; marker was only in the PR description and not bounded evidence).
+- Evidence correction commit: `36f822e7987035b23d587260b1319d582f682384`.
+- Second evaluate transaction: `0x0b483444a7de4d0eebd6c1b10b34e31deeb02b32f9243563a9805fd6b311585a` (`FINALIZED`, `SATISFIED`, `MAJORITY_AGREE`).
+- Bound PR: [#1](https://github.com/Bibidee/patchbound/pull/1).
+- Bound base SHA: `ddf44fe5b1027d73f8247a2709eaca5c8cb01e95`.
+- Bound head SHA: `36f822e7987035b23d587260b1319d582f682384`.
+- Evidence digest: `05e04f41a0ee980983e8e6630b7ce86862c1611ed7ae093b05ca9e817d37174e`.
+- Final outcome: `SATISFIED`; settlement state `PAYABLE` before claim.
+- Claim transaction: `0xf96e531ec5192aa3784491be26bb6803e76c990701d245f6c7d8bd0df7ca4acb` (`FINALIZED`, majority agree).
+- Transfer child transaction: `0x42a07cebf059b85152b1db3070409f992a06842a7325060eb44643c328efba2a` (`FINALIZED`, external receipt `value_credited=true`; result label `NO_MAJORITY`).
+- Confirmation transaction: `0x01ac49c86d3ab79a034726df65feddaa3f313df5d1cd942293c0dde578994d3b` (`FINALIZED`, majority agree).
+- Final agreement state: `PAID`; finalized `get_claimable(developer)` is `0`.
 
 ## Real lifecycle B — alternate outcome and recovery
 
@@ -99,7 +103,7 @@ Additional cancellation-refund evidence is recorded for agreement `2`: create `0
 
 ## Browser verification
 
-Observed during browser verification on 2026-10-01: production `/`, `/new`, `/activity`, and `/work/1` loaded after the remediation redeploy; the Studionet/61999 badge and navigation rendered; `/work/1` no longer failed closed for a missing contract address. The Connect wallet control still correctly reports `No injected EVM wallet found. Install MetaMask or Rabby.` in this browser. The local remediation build passed exact narrow-width overflow checks at 1440, 1024, 768, and 390px. No usable public agreement-bound PR or injected wallet was available for genuine lifecycle execution.
+Observed during browser verification on 2026-10-01: production `/`, `/new`, `/activity`, and `/work/1` loaded after the remediation redeploy; the Studionet/61999 badge and navigation rendered; `/work/1` no longer failed closed for a missing contract address. The Connect wallet control still correctly reports `No injected EVM wallet found. Install MetaMask or Rabby.` in this browser. The local remediation build passed exact narrow-width overflow checks at 1440, 1024, 768, and 390px. The public agreement-bound PR and live lifecycle were verified through the signed Studionet path; browser wallet write-path checks remain unavailable in this browser because no injected EIP-1193 wallet is present.
 
 - [x] application loads without critical errors on production `/`, `/new`, and `/activity`
 - [x] missing injected wallet is handled with a clear message
