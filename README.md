@@ -63,7 +63,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Before deployment the contract address is intentionally zero. After the final Studionet deployment set:
+The deployed contract is configured by default; deployments may override it with:
 
 ```bash
 NEXT_PUBLIC_PATCHBOUND_CONTRACT=0x...
@@ -90,7 +90,7 @@ The suite covers funded creation, role authorization, post-acceptance cancellati
 
 ## Deployment
 
-Deployment is intentionally not fabricated in this handoff. `docs/DEPLOYMENT.md` is the evidence template to fill only after a real 61999 deployment and browser verification. The final deployer should first run `npm run network:check`, verify local CLI `0.39.1`, inspect `npx genlayer deploy --help`, deploy `contracts/patchbound.py` to Studionet, wait for finality, configure the resulting address, rerun preflight, deploy the Next.js frontend, and execute the real lifecycle checklist.
+Deployment evidence is recorded in `docs/DEPLOYMENT.md`. The contract is finalized on Studionet and the frontend is live at `https://patchbound.vercel.app`.
 
 ## Contract deployment
 
@@ -99,6 +99,7 @@ Deployment is intentionally not fabricated in this handoff. `docs/DEPLOYMENT.md`
 - Deployment status: `FINALIZED`
 - Explorer: [Studionet transaction](https://explorer-studio.genlayer.com/tx/0xd7f1b214b186612c9a3798f7324b6d8ceaab0eaa704d6b93c2d82fe5c3cbad3d)
 - Deployed source SHA-256: `004637DFA73D303E821516557DC2DD81B8324E13655A36CEDC6306BD981FCD9A`
+- Frontend: `https://patchbound.vercel.app`
 
 These placeholders must be replaced with real evidence; they are not claims of deployment.
 

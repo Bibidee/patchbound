@@ -25,13 +25,14 @@ Do not fill this file from assumptions. Record only transactions and browser beh
 - Deployment status: `FINALIZED`
 - Explorer: https://explorer-studio.genlayer.com/tx/0xd7f1b214b186612c9a3798f7324b6d8ceaab0eaa704d6b93c2d82fe5c3cbad3d
 - Contract source SHA-256: `004637DFA73D303E821516557DC2DD81B8324E13655A36CEDC6306BD981FCD9A`
-- Git commit: unavailable; supplied handoff and GitHub repository do not contain a commit history.
+- Git commit containing deployed source: `288f4b1989dcbe552fb238203e80b5a6b9e9316b`
 
 ## Frontend
 
-- Production URL:
-- Configured contract address:
-- Deployment commit:
+- Production URL: `https://patchbound.vercel.app`
+- Configured contract address: `0x4CBb65036b3E688dAEE420127c2aeD14CDE41Db5`
+- Deployment commit: `fa4fa8bedaad4060f836296484f80ebde8c4a307`
+- Vercel deployment: `dpl_Av1S26vggnUnu5ZpXiPCoqNtTnpa` (READY)
 
 ## Real lifecycle A — satisfied and paid
 
