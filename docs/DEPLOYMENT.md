@@ -32,7 +32,7 @@ Do not fill this file from assumptions. Record only transactions and browser beh
 - Production URL: `https://patchbound.vercel.app`
 - Configured contract address: `0x4CBb65036b3E688dAEE420127c2aeD14CDE41Db5`
 - Deployment commit: `fa4fa8bedaad4060f836296484f80ebde8c4a307`
-- Vercel deployment: `dpl_Av1S26vggnUnu5ZpXiPCoqNtTnpa` (READY)
+- Vercel deployment: `dpl_5z7WAm9ZDw2WMwzW3y9G8do4jjqT` (READY)
 
 ## Real lifecycle A — satisfied and paid
 
