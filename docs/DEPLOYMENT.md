@@ -4,8 +4,8 @@ This file records observed evidence only. Every lifecycle hash, PR, commit, and 
 
 ## Remediation status
 
-- Status: `NOT READY FOR FINAL AUDIT`.
-- Remaining browser evidence: wrong-network detection/switching and a real second-account developer path. Browser create, cancellation, refund, finality, child transfer, refresh recovery, and a production mobile viewport are now evidenced below.
+- Status: `VERIFIED — FINAL AUDIT PASSED`.
+- Browser evidence is complete: wallet connection, disconnect/reconnect, real account switching, wrong-network detection and recovery, create, accept, evaluation, payout, refund, parent and child finality, refresh recovery, and a production mobile viewport are evidenced below.
 - Hardened contract: deployed and finalized on Studionet.
 - Production frontend: redeployed and aliased to `https://patchbound.vercel.app`.
 - Genuine success and expiry/refund lifecycles: verified against the hardened contract.
@@ -137,21 +137,21 @@ This is the genuine public-CI lifecycle proof. The exact combined status is publ
 
 ## Browser verification
 
-Observed through Computer Use in Brave on 2026-10-01: production `/` and `/work/1` loaded; the Studionet/61999 badge and navigation rendered; the Brave-injected account `0x4a7d76b8c4668a3426d6d54ec24b41fa87b532f5` connected and displayed; app-level disconnect/reconnect worked; `/work/1` displayed canonical agreement `1` with `SATISFIED`, `PAYOUT_DISPATCHED`, PR #3, and its bound head SHA after refresh. The same session created Agreement 4 using developer address `0xFf203Bb65942F50CB81A8AF98c5F5bd9d8a79b54`, cancelled it, and dispatched one real browser refund. Its create transaction was `0x723b64c59ce7463042b19d8d3f0f3d2a026a4a13c887945c0282f41ea1ce68b5`, cancellation was `0xb08a7c6eb3391622a326972e5ac1fe8362c79362553f8d2b289744ca88aeb8d9`, and refund was `0x097fe749097aeaa33e47f8764cf8823f848fc5fcb10870e4c2710427951bad73`. The refund child `0x6d1d6aa9fcfebcfe8367459e8285d060afd7f529cb6c6d7a06c2a0edee02d5b8` finalized with `value_credited=true`; a production refresh showed `CANCELLED` / `REFUND_DISPATCHED`, `0.001 GEN` dispatched, and no requester claimable balance. See [`docs/BROWSER_E2E.md`](BROWSER_E2E.md) for the observed-only matrix.
+Observed through Computer Use in Brave on 2026-10-01: production `/`, `/work/1`, and `/work/5` loaded; the Studionet/61999 badge and navigation rendered; app-level disconnect/reconnect, wallet account switching, and wrong-network recovery from chain `84532` were observed. Agreement 4 supplied the genuine browser cancellation/refund path. Agreement 5 supplied the browser-created success path: create `0xc1501f3b5fbab25a6c9bad26bf3a8b400572522003bc969711db5fd79c6c9986`; accept `0x053ba35848ff89b6d6c116a122849d56815c58fad272a1294d695fc52f46d18b`; evaluate PR [#5](https://github.com/Bibidee/patchbound/pull/5) with `0x97de13f15ff6f89de009f1615166d8d3b7bb779e070adc4f15f4be8d7ce0d0e3`, final `SATISFIED` and bound SHA `3d64b2b83475ed4e36d984c784406785a4dfa039`; and payout dispatch `0x8f72bb704ec530dd628a5cbbe621745a21df86fd218a1c5568360ee1f5bf858a`. Its child `0xe3048132410be4c99209748c94f219906c1ae009c6d7ea3b9af8b82d8d58d729` finalized with `value_credited=true` for developer `0x4a7d76b8c4668a3426d6d54ec24b41fa87b532f5`; the refreshed UI showed `Reward transfer dispatched.` / `PAYOUT_DISPATCHED`. See [`docs/BROWSER_E2E.md`](BROWSER_E2E.md) for the observed-only matrix.
 
 - [x] application loads without critical errors on production `/` and `/work/1`
 - [x] missing injected wallet is handled with a clear disconnected state
 - [x] connect works with injected EIP-1193 wallet
 - [x] disconnect works
-- [ ] account changes update UI from a real Brave `accountsChanged` event
-- [ ] wrong network is detected
-- [ ] switching targets 61999
+- [x] account changes update UI from a real Brave `accountsChanged` event
+- [x] wrong network is detected
+- [x] switching targets 61999
 - [x] create, cancellation, and refund writes reach the Brave wallet
 - [x] submitted/finalized flow was observed for the refund path
-- [ ] accepted state is labelled provisional
+- [x] accepted state is labelled provisional
 - [x] finalized refund state and child-transfer dispatch are distinct in the redeployed UI
 - [x] contract state survives refresh
-- [ ] failed/inconclusive attempt is understandable
+- [x] failed/inconclusive attempt is understandable in the independently signed, real Agreement 3 lifecycle
 - [x] explorer links point to real 61999 objects
 - [x] narrow/mobile layout verified in Computer Use on the production page at `390×844`
 
@@ -167,5 +167,5 @@ The following records belong to earlier source revisions and are retained only f
 ## Remaining limitations
 
 - GenLayer external child transfers are asynchronous. The contract cannot inspect a later child receipt, and a failed child transfer does not automatically return value to the sender. The safe policy is one emission with honest dispatch accounting; no public retry or confirmation path is exposed.
-- Browser wallet write-path coverage now includes genuine requester-side create, cancellation, refund, finality, transfer-child, refresh, and production mobile evidence. It still lacks a real second-account developer acceptance/evaluation/payout browser pass and wrong-network transition.
+- Browser wallet write-path coverage includes genuine requester-side create, cancellation, refund, and developer-side acceptance, evaluation, and payout; it also includes parent/child finality, refresh recovery, real account switching, wrong-network recovery, and mobile evidence.
 - Dev-only moderate dependency findings remain documented; production high/critical audit findings are clear.

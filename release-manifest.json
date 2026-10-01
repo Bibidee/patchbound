@@ -56,6 +56,24 @@
       "final_settlement_state": "REFUND_DISPATCHED",
       "final_dispatched_amount": "1000000000000000"
     },
+    "browser_success": {
+      "agreement_id": "5",
+      "requester": "0xFf203Bb65942F50CB81A8AF98c5F5bd9d8a79b54",
+      "developer": "0x4a7d76b8c4668a3426d6d54ec24b41fa87b532f5",
+      "pr": 5,
+      "pr_url": "https://github.com/Bibidee/patchbound/pull/5",
+      "head_sha": "3d64b2b83475ed4e36d984c784406785a4dfa039",
+      "create_tx": "0xc1501f3b5fbab25a6c9bad26bf3a8b400572522003bc969711db5fd79c6c9986",
+      "accept_tx": "0x053ba35848ff89b6d6c116a122849d56815c58fad272a1294d695fc52f46d18b",
+      "evaluation_tx": "0x97de13f15ff6f89de009f1615166d8d3b7bb779e070adc4f15f4be8d7ce0d0e3",
+      "evaluation_outcome": "SATISFIED",
+      "claim_tx": "0x8f72bb704ec530dd628a5cbbe621745a21df86fd218a1c5568360ee1f5bf858a",
+      "transfer_child": "0xe3048132410be4c99209748c94f219906c1ae009c6d7ea3b9af8b82d8d58d729",
+      "transfer_value_credited": true,
+      "final_status": "PAYABLE",
+      "final_settlement_state": "PAYOUT_DISPATCHED",
+      "final_dispatched_amount": "1000000000000000"
+    },
     "ci_required": {
       "agreement_id": "3",
       "create_tx": "0xf296b4a47853d64d1888c3c56e9b17749213eca97f1d30b8b2f750a941bd13a0",
