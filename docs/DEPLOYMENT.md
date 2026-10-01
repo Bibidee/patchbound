@@ -5,7 +5,7 @@ This file records observed evidence only. Every lifecycle hash, PR, commit, and 
 ## Remediation status
 
 - Status: `NOT READY FOR FINAL AUDIT`.
-- Remaining browser evidence: wrong-network detection/switching, a real second-account developer path, and a production mobile viewport. Browser create, cancellation, refund, finality, child transfer, and refresh recovery are now evidenced below.
+- Remaining browser evidence: wrong-network detection/switching and a real second-account developer path. Browser create, cancellation, refund, finality, child transfer, refresh recovery, and a production mobile viewport are now evidenced below.
 - Hardened contract: deployed and finalized on Studionet.
 - Production frontend: redeployed and aliased to `https://patchbound.vercel.app`.
 - Genuine success and expiry/refund lifecycles: verified against the hardened contract.
@@ -153,7 +153,7 @@ Observed through Computer Use in Brave on 2026-10-01: production `/` and `/work/
 - [x] contract state survives refresh
 - [ ] failed/inconclusive attempt is understandable
 - [x] explorer links point to real 61999 objects
-- [ ] narrow/mobile layout verified in Computer Use production browser (local narrow-width checks remain separate evidence)
+- [x] narrow/mobile layout verified in Computer Use on the production page at `390×844`
 
 ## Historical deployments not used as remediation evidence
 
@@ -167,5 +167,5 @@ The following records belong to earlier source revisions and are retained only f
 ## Remaining limitations
 
 - GenLayer external child transfers are asynchronous. The contract cannot inspect a later child receipt, and a failed child transfer does not automatically return value to the sender. The safe policy is one emission with honest dispatch accounting; no public retry or confirmation path is exposed.
-- Browser wallet write-path coverage now includes genuine requester-side create, cancellation, refund, finality, transfer-child, and refresh evidence. It still lacks a real second-account developer acceptance/evaluation/payout browser pass, wrong-network transition, and production mobile viewport.
+- Browser wallet write-path coverage now includes genuine requester-side create, cancellation, refund, finality, transfer-child, refresh, and production mobile evidence. It still lacks a real second-account developer acceptance/evaluation/payout browser pass and wrong-network transition.
 - Dev-only moderate dependency findings remain documented; production high/critical audit findings are clear.
