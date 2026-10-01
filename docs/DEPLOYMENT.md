@@ -93,9 +93,10 @@ The configured CLI account is `signalbond-challenger-unlocked` with address `0x8
 
 ## Browser verification
 
-The production site previously exposed a working shell, but the wallet and live lifecycle gates were not observed in this environment. The production repository had no usable public agreement-bound PR during the earlier audit. These checks remain open until a real injected wallet and public PR are used.
+Observed during browser verification on 2026-10-01: production `/`, `/new`, and `/activity` loaded; the Studionet/61999 badge and navigation rendered; the Connect wallet control gave the clear message `No injected EVM wallet found. Install MetaMask or Rabby.` The local remediation build also rendered `/` and `/new` with no horizontal overflow at the available 1280px browser width. Exact mobile emulation was unavailable, and the production shell is still the historical deployment until the new contract is deployed. The production repository had no usable public agreement-bound PR during the earlier audit.
 
-- [ ] application loads without critical errors
+- [x] application loads without critical errors on production `/`, `/new`, and `/activity`
+- [x] missing injected wallet is handled with a clear message
 - [ ] connect works with injected EIP-1193 wallet
 - [ ] disconnect works
 - [ ] account changes update UI
