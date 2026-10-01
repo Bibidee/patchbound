@@ -72,9 +72,9 @@ The following records belong to the prior deployed source revision and are retai
 
 ## Real lifecycle A — satisfied and paid (pending public PR)
 
-- Agreement ID: `1`.
-- Create transaction: `0x8508020a947320b90f4cfcc4a5b3d42fa181f4d4b4366ab3b4b3a6eeb0d32370` (`FINALIZED`, majority agree).
-- Accept transaction: `0xa70188e2cfdaf672876731d7e769328984630ce7908f7cedf615493bb9a42f5d` (`FINALIZED`, majority agree).
+- Agreement ID: `3`.
+- Create transaction: `0x5539b2f4cc3dca6610bc9a02157a67579810fc3f4b049e95fa01964de838f7e6` (`FINALIZED`, majority agree).
+- Accept transaction: `0x88492f2c5ff289e49e59d0a35b907ccccee72a74b42d95c27249258a821bc826` (`FINALIZED`, majority agree).
 - Evaluate transaction:
 - Bound PR:
 - Bound head SHA:
@@ -86,14 +86,16 @@ The following records belong to the prior deployed source revision and are retai
 
 ## Real lifecycle B — alternate outcome and recovery
 
-- Agreement ID: `2`.
-- Create transaction: `0x9e8ddc934f91d8beb5fde6ff3862681aa9447b6788d859a031496597a9fed354` (`FINALIZED`, majority agree).
-- Cancellation transaction: `0xe2c1aa3f9218ca3e9f34cf27fd277d70c9b8be80407fbf3be2ac8040257632f0` (`FINALIZED`, majority agree).
-- Refund claim transaction: `0xe7055c818ad49e684ab3dcb7e0db59ba639eb458d164edeb0eeb5a9cefbb8fab` (`FINALIZED`, majority agree).
-- Transfer child: `0xf9be4ff04e94f8ec78c4a3e07b1b33ba7f37ca787796fd1ef32dbaa67771b76a` (`FINALIZED`, external receipt `status=success`, `value_credited=true`; the GenLayer consensus result label is `NO_MAJORITY` for this EOA transfer child).
-- Confirmation transaction: `0x239ff49f52d6432b16279848d75844cd3a2c95c47ba09a802a91063461c9b8cc` (`FINALIZED`, majority agree).
-- Final on-chain state: `CANCELLED` / `REFUNDED`.
-- Recovery status: verified; the finalized child receipt proves recipient credit before the confirmation transaction.
+- Agreement ID: `1`.
+- Path: `ACTIVE` → delivery deadline passed → `close_expired` → requester refund.
+- Close-expired transaction: `0x01e1de2a06766a5b35015e5a4c7f8592f45d4be2a01b97e57661333a28fe6e87` (`FINALIZED`, majority agree).
+- Refund claim transaction: `0xc1f92ae997d676afb349f084ca56459833f474dbd1c6e83e711c72e1434eddd8` (`FINALIZED`, majority agree).
+- Transfer child: `0x54970b79c5d54b96988afa61ce15340448e0a14338498869a7109a682c54a886` (`FINALIZED`, external receipt `status=success`, `value_credited=true`).
+- Confirmation transaction: `0xd2866ec06804f70d5551768a03804ad44ae7d300e03483f7b53f18fd31de5d17` (`FINALIZED`, majority agree).
+- Final on-chain state: `EXPIRED` / `REFUNDED`.
+- Recovery status: verified; the finalized child receipt proves recipient credit before confirmation.
+
+Additional cancellation-refund evidence is recorded for agreement `2`: create `0x9e8ddc934f91d8beb5fde6ff3862681aa9447b6788d859a031496597a9fed354`, cancel `0xe2c1aa3f9218ca3e9f34cf27fd277d70c9b8be80407fbf3be2ac8040257632f0`, claim `0xe7055c818ad49e684ab3dcb7e0db59ba639eb458d164edeb0eeb5a9cefbb8fab`, child `0xf9be4ff04e94f8ec78c4a3e07b1b33ba7f37ca787796fd1ef32dbaa67771b76a` (`value_credited=true`), and confirmation `0x239ff49f52d6432b16279848d75844cd3a2c95c47ba09a802a91063461c9b8cc`.
 
 ## Browser verification
 
