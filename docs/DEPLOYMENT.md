@@ -4,13 +4,13 @@ Do not fill this file from assumptions. Record only transactions and browser beh
 
 ## Preflight
 
-- [ ] `npm run network:check`
-- [ ] `npx genlayer --version` reports `0.39.1`
+- [x] `npm run network:check`
+- [x] `npx genlayer --version` reports `0.39.1`
 - [x] `npm run typecheck`
 - [x] `npm run lint` (two non-fatal warnings)
 - [x] `npm run test` (2 UI tests passed)
 - [x] `npm run build`
-- [ ] Direct Mode suite passes (Python is unavailable on the host)
+- [x] Direct Mode suite passes with Python 3.13.16 and the pinned `genlayer-test` runtime
 - [x] repository search finds no forbidden network configuration
 - [x] no secrets or private keys are tracked
 
@@ -26,6 +26,12 @@ Do not fill this file from assumptions. Record only transactions and browser beh
 - Explorer: https://explorer-studio.genlayer.com/tx/0xd7f1b214b186612c9a3798f7324b6d8ceaab0eaa704d6b93c2d82fe5c3cbad3d
 - Contract source SHA-256: `004637DFA73D303E821516557DC2DD81B8324E13655A36CEDC6306BD981FCD9A`
 - Git commit containing deployed source: `288f4b1989dcbe552fb238203e80b5a6b9e9316b`
+- Note: the finalized deployment evidence above refers to that recorded source commit; subsequent Direct Mode compatibility fixes are committed separately and are not claimed as deployed here.
+
+## Local Direct Mode evidence
+
+- Command: `.venv\\Scripts\\python.exe -m pytest -q`
+- Result: `10 passed in 0.55s`
 
 ## Frontend
 
