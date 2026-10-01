@@ -6,13 +6,13 @@ Do not fill this file from assumptions. Record only transactions and browser beh
 
 - [ ] `npm run network:check`
 - [ ] `npx genlayer --version` reports `0.39.1`
-- [ ] `npm run typecheck`
-- [ ] `npm run lint`
-- [ ] `npm run test`
-- [ ] `npm run build`
-- [ ] Direct Mode suite passes
-- [ ] repository search finds no forbidden network configuration
-- [ ] no secrets or private keys are tracked
+- [x] `npm run typecheck`
+- [x] `npm run lint` (two non-fatal warnings)
+- [x] `npm run test` (2 UI tests passed)
+- [x] `npm run build`
+- [ ] Direct Mode suite passes (Python is unavailable on the host)
+- [x] repository search finds no forbidden network configuration
+- [x] no secrets or private keys are tracked
 
 ## Contract deployment
 
