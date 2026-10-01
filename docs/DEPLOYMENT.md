@@ -22,7 +22,7 @@ This file records observed evidence only. Blank lifecycle fields are intentional
 - [x] `npm run preflight` — network check, typecheck, lint, 7 UI tests, 25 Direct Mode tests, and production build all passed.
 - [x] `npm audit --omit=dev --audit-level=high` — no production high/critical advisories after the dependency update.
 - [ ] Full dependency audit is not entirely zero: 5 moderate dev-only transitive findings remain in the GenLayer CLI/Vitest/Dockerode toolchain; forcing Vitest 4 would be a breaking change.
-- [x] Public CI for `98825759583ede53e8d3db2c91e593b9568a1b6c` passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36858963733) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36858963449).
+- [x] Public CI for `866f5524f29f5afcea16b12c1b7067384e0b790f` passed on both branches: [main run](https://github.com/Bibidee/patchbound/actions/runs/36859292182) and [master run](https://github.com/Bibidee/patchbound/actions/runs/36859292631).
 - [x] repository search finds no forbidden network configuration.
 - [x] no secrets or private keys are tracked.
 
